@@ -1,7 +1,8 @@
 export type {
   VoteEventListItem,
-  VoteEventsList,
   VoteEventsPageInfo,
+  OngoingVoteEvents,
+  CompletedVoteEvents,
 } from "./model/types";
 export {
   getOngoingVoteEvents,
@@ -12,3 +13,6 @@ export {
   useOngoingVoteEventsQuery,
   useCompletedVoteEventsQuery,
 } from "./model/queries";
+export { CategoryBadge } from "./ui/CategoryBadge";
+export { VoteOptionPair } from "./ui/VoteOptionPair";
+export { VoteEventCard } from "./ui/VoteEventCard";

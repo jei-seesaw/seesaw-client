@@ -1,10 +1,10 @@
 import { httpClient } from "@/shared/api";
-import type { VoteEventsList } from "../model/types";
+import type { CompletedVoteEvents, OngoingVoteEvents } from "../model/types";
 
-export function getOngoingVoteEvents(): Promise<VoteEventsList> {
-  return httpClient.get<VoteEventsList>("/ongoing-vote-events");
+export function getOngoingVoteEvents(): Promise<OngoingVoteEvents> {
+  return httpClient.get<OngoingVoteEvents>("/ongoing-vote-events");
 }
 
-export function getCompletedVoteEvents(): Promise<VoteEventsList> {
-  return httpClient.get<VoteEventsList>("/completed-vote-events");
+export function getCompletedVoteEvents(): Promise<CompletedVoteEvents> {
+  return httpClient.get<CompletedVoteEvents>("/completed-vote-events");
 }

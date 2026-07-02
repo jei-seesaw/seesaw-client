@@ -21,9 +21,16 @@ export interface VoteEventsPageInfo {
   nextCursor: string | null;
 }
 
-export interface VoteEventsList {
+/** GET /ongoing-vote-events */
+export interface OngoingVoteEvents {
   /** 가장 뜨거운 배틀 (없으면 null). */
   mainVote: VoteEventListItem | null;
   otherVoteEvents: VoteEventListItem[];
+  pageInfo: VoteEventsPageInfo;
+}
+
+/** GET /completed-vote-events */
+export interface CompletedVoteEvents {
+  voteEvents: VoteEventListItem[];
   pageInfo: VoteEventsPageInfo;
 }
