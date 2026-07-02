@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getNickname } from "@/shared/lib";
+import { ConfirmModal } from "@/shared/ui";
 import { useHomeSummaryQuery } from "@/entities/home";
 import { AuthModal, useLogout } from "@/features/auth";
 
 export function Header() {
   const [authOpen, setAuthOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const { data } = useHomeSummaryQuery();
   const logout = useLogout();
 
@@ -35,7 +37,7 @@ export function Header() {
               </span>
             )}
             <button
-              onClick={logout}
+              onClick={() => setLogoutOpen(true)}
               className="rounded-xl bg-gray-100 px-4 py-2.5 text-sm font-semibold text-muted transition hover:bg-gray-200"
             >
               로그아웃
@@ -52,6 +54,14 @@ export function Header() {
       </div>
 
       <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+      <ConfirmModal
+        open={logoutOpen}
+        title="정말 로그아웃하시겠습니까?"
+        confirmLabel="확인"
+        cancelLabel="취소"
+        onConfirm={logout}
+        onClose={() => setLogoutOpen(false)}
+      />
     </header>
   );
 }
