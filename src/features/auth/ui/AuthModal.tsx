@@ -3,12 +3,7 @@ import { Modal } from "@/shared/ui";
 import { validatePassword } from "@/shared/lib";
 import { useAffiliationsQuery } from "@/entities/affiliation";
 import { useNicknameAvailabilityQuery } from "@/entities/user";
-import {
-  getLoginErrorMessage,
-  getRegisterErrorMessage,
-  useLogin,
-  useRegister,
-} from "../model/useAuth";
+import { getLoginErrorMessage, getRegisterErrorMessage, useLogin, useRegister } from "../model/useAuth";
 import type { AuthTab } from "../model/types";
 
 interface AuthModalProps {
@@ -29,23 +24,15 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   // 닉네임 중복확인: "중복확인" 버튼으로 확인한 닉네임만 사용 가능 (회원가입 탭 전용)
   const trimmedNickname = nickname.trim();
   const [checkedNickname, setCheckedNickname] = useState("");
-  const nicknameQuery = useNicknameAvailabilityQuery(
-    tab === "register" ? checkedNickname : "",
-  );
+  const nicknameQuery = useNicknameAvailabilityQuery(tab === "register" ? checkedNickname : "");
 
   // 확인한 닉네임이 현재 입력과 같아야 유효 (입력이 바뀌면 다시 확인 필요)
-  const nicknameChecked =
-    tab === "register" &&
-    checkedNickname.length > 0 &&
-    checkedNickname === trimmedNickname;
+  const nicknameChecked = tab === "register" && checkedNickname.length > 0 && checkedNickname === trimmedNickname;
   const nicknameChecking = nicknameChecked && nicknameQuery.isFetching;
   const nicknameSettled = nicknameChecked && !nicknameQuery.isFetching;
-  const nicknameAvailable =
-    nicknameSettled && nicknameQuery.data?.available === true;
-  const nicknameTaken =
-    nicknameSettled && nicknameQuery.data?.available === false;
-  const nicknameNeedsCheck =
-    tab === "register" && trimmedNickname.length > 0 && !nicknameChecked;
+  const nicknameAvailable = nicknameSettled && nicknameQuery.data?.available === true;
+  const nicknameTaken = nicknameSettled && nicknameQuery.data?.available === false;
+  const nicknameNeedsCheck = tab === "register" && trimmedNickname.length > 0 && !nicknameChecked;
 
   const pending = loginMutation.isPending || registerMutation.isPending;
   const activeError = tab === "login" ? loginMutation.error : registerMutation.error;
@@ -57,19 +44,13 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
   // 비밀번호 규칙: 8자 이상 (로그인·회원가입 공통)
   const passwordCheck = validatePassword(password);
-  const showRegisterPwError =
-    tab === "register" && password.length > 0 && !passwordCheck.valid;
-  const showLoginPwError =
-    tab === "login" && password.length > 0 && !passwordCheck.valid;
+  const showRegisterPwError = tab === "register" && password.length > 0 && !passwordCheck.valid;
+  const showLoginPwError = tab === "login" && password.length > 0 && !passwordCheck.valid;
 
   const canSubmit = Boolean(
     tab === "login"
       ? trimmedNickname && passwordCheck.valid && !pending
-      : trimmedNickname &&
-          passwordCheck.valid &&
-          affiliationCode &&
-          nicknameAvailable &&
-          !pending,
+      : trimmedNickname && passwordCheck.valid && affiliationCode && nicknameAvailable && !pending,
   );
 
   function handleClose() {
@@ -105,10 +86,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     if (tab === "login") {
       loginMutation.mutate({ nickname, password }, { onSuccess: handleClose });
     } else {
-      registerMutation.mutate(
-        { nickname, password, affiliationCode },
-        { onSuccess: handleClose },
-      );
+      registerMutation.mutate({ nickname, password, affiliationCode }, { onSuccess: handleClose });
     }
   }
 
@@ -125,10 +103,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
         <TabButton active={tab === "login"} onClick={() => switchTab("login")}>
           로그인
         </TabButton>
-        <TabButton
-          active={tab === "register"}
-          onClick={() => switchTab("register")}
-        >
+        <TabButton active={tab === "register"} onClick={() => switchTab("register")}>
           가입하기
         </TabButton>
       </div>
@@ -183,18 +158,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             placeholder="비밀번호"
             autoComplete={tab === "login" ? "current-password" : "new-password"}
           />
-          {tab === "register" && (
-            <p
-              className={`text-xs ${showRegisterPwError ? "text-red-500" : "text-muted"}`}
-            >
-              {showRegisterPwError
-                ? passwordCheck.message
-                : "8자 이상으로 만들어 주세요"}
-            </p>
+          {tab === "register" && password.length === 0 && (
+            <p className="text-xs text-muted">8자 이상으로 만들어 주세요</p>
           )}
-          {showLoginPwError && (
-            <p className="text-xs text-red-500">{passwordCheck.message}</p>
-          )}
+          {(showRegisterPwError || showLoginPwError) && <p className="text-xs text-red-500">{passwordCheck.message}</p>}
         </div>
 
         {tab === "register" && (
@@ -220,14 +187,12 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             </div>
 
             <p className="rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-600">
-              ⭐ 가입 시 1,000 토큰 증정!
+              🎉 가입 시 1,000 토큰 증정!
             </p>
           </>
         )}
 
-        {errorMessage && (
-          <p className="text-xs text-red-500">{errorMessage}</p>
-        )}
+        {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
 
         <button
           type="submit"
@@ -267,15 +232,7 @@ function NicknameFeedback({
   return null;
 }
 
-function TabButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: string;
-}) {
+function TabButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: string }) {
   return (
     <button
       type="button"
