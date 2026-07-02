@@ -2,6 +2,7 @@ export { AuthModal } from "./ui/AuthModal";
 export {
   useLogin,
   useRegister,
+  useLogout,
   getLoginErrorMessage,
   getRegisterErrorMessage,
 } from "./model/useAuth";

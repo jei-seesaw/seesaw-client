@@ -1,17 +1,33 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HttpError } from "@/shared/api";
-import { setToken } from "@/shared/lib";
+import { clearToken, setToken } from "@/shared/lib";
 import { homeKeys } from "@/entities/home";
 import { voteEventKeys } from "@/entities/vote-event";
 import { login, register } from "../api/authApi";
 
-/** 로그인/가입 성공 후 인증 상태에 영향받는 데이터를 다시 불러온다. */
-function useAuthSuccess() {
+/** 인증 상태(로그인 여부·토큰·참여 여부)에 영향받는 데이터를 다시 불러온다. */
+function useInvalidateAuthScopedQueries() {
   const queryClient = useQueryClient();
-  return (accessToken: string) => {
-    setToken(accessToken);
+  return () => {
     queryClient.invalidateQueries({ queryKey: homeKeys.summary });
     queryClient.invalidateQueries({ queryKey: voteEventKeys.all });
+  };
+}
+
+function useAuthSuccess() {
+  const invalidate = useInvalidateAuthScopedQueries();
+  return (accessToken: string) => {
+    setToken(accessToken);
+    invalidate();
+  };
+}
+
+/** 로그아웃: 토큰을 지우고 인증 의존 데이터를 갱신한다. */
+export function useLogout() {
+  const invalidate = useInvalidateAuthScopedQueries();
+  return () => {
+    clearToken();
+    invalidate();
   };
 }
 
