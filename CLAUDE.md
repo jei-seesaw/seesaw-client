@@ -185,8 +185,7 @@ the same image preview primitive from `shared/ui`.
 
 - Nickname duplicate check (calls availability API).
 - Random nickname suggestion.
-- Password: 8–16 chars, composed of **at least two** of {letters, digits, special chars}.
-  Put this validator in `shared/lib` and reuse it.
+- Password: **8자 이상** (그 외 제약 없음). Put this validator in `shared/lib` and reuse it.
 
 ### Sign-in page
 
