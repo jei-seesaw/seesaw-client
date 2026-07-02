@@ -233,3 +233,11 @@ the same image preview primitive from `shared/ui`.
 
 - Path alias `@/` → `src/` (configure in `vite.config.ts` + `tsconfig`).
 - Run `npm run lint` and `npm run build` before considering a change done.
+
+### File Naming
+
+- **Component files (`.tsx`) use PascalCase**, matching the component name:
+  `ErrorPage.tsx`, `LoadingSpinner.tsx` — not `error-page.tsx`.
+- Non-component files (`.ts` — utilities, hooks, api, model, config) use
+  camelCase: `useCountdown.ts`, `queryKeys.ts`, `auth.ts`.
+- Public-API barrels are always `index.ts`.
