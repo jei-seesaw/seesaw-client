@@ -1,35 +1,8 @@
-import { useHealthQuery } from "@/shared/api";
-import { useAffiliationsQuery } from "@/entities/affiliation";
-
 export default function MainPage() {
-  const health = useHealthQuery();
-  const affiliations = useAffiliationsQuery();
-
   return (
-    <div>
-      <h1>메인페이지</h1>
-
-      <section>
-        <h2>API 상태</h2>
-        {health.isLoading && <p>확인 중…</p>}
-        {health.isError && <p>health 호출 실패</p>}
-        {health.data && <p>status: {health.data.status}</p>}
-      </section>
-
-      <section>
-        <h2>소속 목록</h2>
-        {affiliations.isLoading && <p>불러오는 중…</p>}
-        {affiliations.isError && <p>affiliations 호출 실패</p>}
-        {affiliations.data && (
-          <ul>
-            {affiliations.data.map((a) => (
-              <li key={a.code}>
-                {a.code} — {a.name}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+    <div className="flex flex-col gap-1">
+      <h1 className="text-2xl font-bold text-heading">진행중인 투표</h1>
+      <p className="text-sm text-muted">여기에 현황판 · 핫한 투표 · 투표 목록이 들어갑니다.</p>
     </div>
   );
 }

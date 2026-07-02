@@ -1,1 +1,17 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", system-ui, sans-serif;
+
+  --color-canvas: #f3f5f7; /* 페이지 배경 */
+  --color-surface: #ffffff; /* 카드 표면 */
+  --color-heading: #0b1220; /* 제목 텍스트 */
+  --color-muted: #6b7280; /* 보조 텍스트 */
+  --color-border: #e5e7eb;
+  --color-primary: #2563eb;
+}
+
+body {
+  @apply bg-canvas text-heading font-sans;
+}
