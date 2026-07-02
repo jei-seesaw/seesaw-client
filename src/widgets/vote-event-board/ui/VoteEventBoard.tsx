@@ -91,7 +91,11 @@ export function VoteEventBoard() {
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {filtered.map((item) => (
-            <VoteEventCard key={item.id} item={item} />
+            <VoteEventCard
+              key={item.id}
+              item={item}
+              revealResults={tab === "completed"}
+            />
           ))}
         </div>
       )}

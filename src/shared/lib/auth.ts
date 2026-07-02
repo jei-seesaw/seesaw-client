@@ -1,9 +1,17 @@
 const TOKEN_KEY = "seesaw_token";
 
-/**
- * TEMP auth check. Replace with a real session source (cookie/context/query)
- * once auth is implemented. For now it just looks for a token in localStorage.
- */
+export function getToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
 export function isAuthenticated(): boolean {
-  return Boolean(localStorage.getItem(TOKEN_KEY));
+  return Boolean(getToken());
 }
