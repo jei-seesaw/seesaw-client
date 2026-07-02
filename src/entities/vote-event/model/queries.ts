@@ -12,9 +12,11 @@ export function useOngoingVoteEventsQuery() {
   });
 }
 
-export function useCompletedVoteEventsQuery() {
+/** 완료 목록은 완료 탭을 열었을 때만 조회하도록 enabled로 게이팅한다. */
+export function useCompletedVoteEventsQuery(enabled = true) {
   return useQuery({
     queryKey: voteEventKeys.completed(),
     queryFn: getCompletedVoteEvents,
+    enabled,
   });
 }

@@ -1,27 +1,25 @@
 import { useMemo, useState } from "react";
 import {
+  getCategoryEmoji,
   useCompletedVoteEventsQuery,
   useOngoingVoteEventsQuery,
+  VOTE_CATEGORIES,
   VoteEventCard,
   type VoteEventListItem,
 } from "@/entities/vote-event";
 
 type Tab = "ongoing" | "completed";
 
-const CATEGORY_CHIPS = [
-  { label: "전체", emoji: "" },
-  { label: "배팅", emoji: "🎯" },
-  { label: "일상", emoji: "☀️" },
-  { label: "밸런스", emoji: "⚖️" },
-  { label: "업무", emoji: "💼" },
-];
+const ALL_CATEGORY = "전체";
+const CATEGORY_FILTERS = [ALL_CATEGORY, ...VOTE_CATEGORIES];
 
 export function VoteEventBoard() {
   const [tab, setTab] = useState<Tab>("ongoing");
-  const [category, setCategory] = useState("전체");
+  const [category, setCategory] = useState<string>(ALL_CATEGORY);
 
   const ongoing = useOngoingVoteEventsQuery();
-  const completed = useCompletedVoteEventsQuery();
+  // 완료 목록은 완료 탭을 실제로 열었을 때만 요청 (초기 로드 네트워크 절약)
+  const completed = useCompletedVoteEventsQuery(tab === "completed");
 
   // 탭에 맞는 목록을 단일 배열로 평탄화
   const items = useMemo<VoteEventListItem[]>(() => {
@@ -36,7 +34,7 @@ export function VoteEventBoard() {
 
   const filtered = useMemo(
     () =>
-      category === "전체"
+      category === ALL_CATEGORY
         ? items
         : items.filter((item) => item.categoryName === category),
     [items, category],
@@ -65,18 +63,20 @@ export function VoteEventBoard() {
 
       {/* 카테고리 칩 */}
       <div className="flex flex-wrap gap-2">
-        {CATEGORY_CHIPS.map((chip) => (
+        {CATEGORY_FILTERS.map((label) => (
           <button
-            key={chip.label}
-            onClick={() => setCategory(chip.label)}
+            key={label}
+            onClick={() => setCategory(label)}
             className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-              category === chip.label
+              category === label
                 ? "bg-amber-100 text-amber-700"
                 : "bg-surface text-muted hover:bg-gray-100"
             }`}
           >
-            {chip.emoji && <span className="mr-1">{chip.emoji}</span>}
-            {chip.label}
+            {label !== ALL_CATEGORY && (
+              <span className="mr-1">{getCategoryEmoji(label)}</span>
+            )}
+            {label}
           </button>
         ))}
       </div>

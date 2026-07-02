@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import type { VoteEventListItem } from "../model/types";
 import { CategoryBadge } from "./CategoryBadge";
@@ -9,8 +10,12 @@ interface VoteEventCardProps {
   revealResults?: boolean;
 }
 
-/** 목록 그리드용 투표 카드. */
-export function VoteEventCard({
+/**
+ * 목록 그리드용 투표 카드.
+ * memo: 탭/카테고리 변경 시 리스트가 재렌더돼도 props(item·revealResults)가
+ * 그대로면 카드는 재렌더되지 않는다. (item은 쿼리 캐시에서 안정적 참조)
+ */
+export const VoteEventCard = memo(function VoteEventCard({
   item,
   revealResults = false,
 }: VoteEventCardProps) {
@@ -45,4 +50,4 @@ export function VoteEventCard({
       </footer>
     </Link>
   );
-}
+});

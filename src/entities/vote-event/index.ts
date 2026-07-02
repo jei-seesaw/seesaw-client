@@ -10,6 +10,11 @@ export {
 } from "./api/voteEventApi";
 export { voteEventKeys } from "./model/queryKeys";
 export {
+  VOTE_CATEGORIES,
+  getCategoryEmoji,
+  type VoteCategoryName,
+} from "./model/category";
+export {
   useOngoingVoteEventsQuery,
   useCompletedVoteEventsQuery,
 } from "./model/queries";
