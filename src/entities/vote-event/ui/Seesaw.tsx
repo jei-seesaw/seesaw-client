@@ -73,7 +73,7 @@ function Seat({
         <img
           src={imageUrl}
           alt={label}
-          className="h-14 w-14 rounded-xl object-cover"
+          className="mb-1 h-20 w-24 rounded-2xl object-cover shadow-sm"
         />
       )}
       <span className={`text-3xl font-extrabold leading-none ${color}`}>
