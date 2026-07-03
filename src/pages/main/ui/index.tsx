@@ -1,6 +1,7 @@
 import { HomeHero } from "@/widgets/home-hero";
 import { FeaturedVote } from "@/widgets/featured-vote";
 import { VoteEventBoard } from "@/widgets/vote-event-board";
+import { CreateVoteFab } from "@/widgets/create-vote-fab";
 
 export default function MainPage() {
   return (
@@ -8,6 +9,7 @@ export default function MainPage() {
       <HomeHero />
       <FeaturedVote />
       <VoteEventBoard />
+      <CreateVoteFab />
     </div>
   );
 }

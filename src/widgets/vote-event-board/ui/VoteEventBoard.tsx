@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import {
+  CATEGORY_LABELS,
   getCategoryEmoji,
   useCompletedVoteEventsQuery,
   useOngoingVoteEventsQuery,
-  VOTE_CATEGORIES,
   VoteEventCard,
   type VoteEventListItem,
 } from "@/entities/vote-event";
@@ -11,7 +11,7 @@ import {
 type Tab = "ongoing" | "completed";
 
 const ALL_CATEGORY = "전체";
-const CATEGORY_FILTERS = [ALL_CATEGORY, ...VOTE_CATEGORIES];
+const CATEGORY_FILTERS = [ALL_CATEGORY, ...CATEGORY_LABELS];
 
 export function VoteEventBoard() {
   const [tab, setTab] = useState<Tab>("ongoing");
