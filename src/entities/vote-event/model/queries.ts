@@ -2,8 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getCompletedVoteEvents,
   getOngoingVoteEvents,
+  getVoteEventDetail,
 } from "../api/voteEventApi";
 import { voteEventKeys } from "./queryKeys";
+
+export function useVoteEventDetailQuery(id: string) {
+  return useQuery({
+    queryKey: voteEventKeys.detail(id),
+    queryFn: () => getVoteEventDetail(id),
+    enabled: Boolean(id),
+  });
+}
 
 export function useOngoingVoteEventsQuery() {
   return useQuery({

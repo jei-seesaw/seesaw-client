@@ -16,9 +16,40 @@ export interface VoteEventListItem {
   isParticipated: boolean;
 }
 
+export type VoteSide = "A" | "B";
+
 export interface VoteEventsPageInfo {
   hasNext: boolean;
   nextCursor: string | null;
+}
+
+export interface AffiliationStat {
+  affiliationCode: string;
+  affiliationName: string;
+  optionARatio: number;
+  optionBRatio: number;
+}
+
+/** GET /vote-events/{id} */
+export interface VoteEventDetail {
+  categoryName: string;
+  title: string;
+  totalParticipantCount: number;
+  remainingTime: string | null;
+  optionA: string;
+  optionB: string;
+  optionAImageUrl: string | null;
+  optionBImageUrl: string | null;
+  /** 참여 전에는 null. */
+  optionARatio: number | null;
+  optionBRatio: number | null;
+  /** 옵션별 결과 수량 (배팅=토큰, 그 외=표). 참여 전에는 null. */
+  optionAResultAmount: number | null;
+  optionBResultAmount: number | null;
+  affiliationStats: AffiliationStat[] | null;
+  isParticipated: boolean;
+  selectedOption: VoteSide | null;
+  totalTokenAmount: number | null;
 }
 
 /** GET /ongoing-vote-events */
