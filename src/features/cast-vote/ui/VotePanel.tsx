@@ -49,12 +49,16 @@ export function VotePanel({ voteEventId, detail, isBetting }: VotePanelProps) {
           side="A"
           label={detail.optionA}
           imageUrl={detail.optionAImageUrl}
+          selected={selected === "A"}
+          onClick={() => setSelected("A")}
         />
         <span className="self-center text-xs font-semibold text-muted">vs</span>
         <OptionPreview
           side="B"
           label={detail.optionB}
           imageUrl={detail.optionBImageUrl}
+          selected={selected === "B"}
+          onClick={() => setSelected("B")}
         />
       </div>
 

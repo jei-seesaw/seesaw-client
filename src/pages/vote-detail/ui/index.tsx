@@ -15,15 +15,14 @@ export default function VoteDetailPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="sticky top-0 z-30 grid grid-cols-[1fr_auto_1fr] items-center border-b border-border bg-surface px-4 py-3.5">
+      <header className="sticky top-0 z-30 flex items-center border-b border-border bg-surface px-4 py-3.5">
         <button
           onClick={() => navigate(-1)}
           aria-label="뒤로"
-          className="justify-self-start text-xl text-muted"
+          className="text-xl text-muted"
         >
           ‹
         </button>
-        {detail && <CategoryBadge categoryName={detail.categoryName} />}
       </header>
 
       <main className="mx-auto flex max-w-xl flex-col gap-4 px-4 py-5">
@@ -56,7 +55,8 @@ function VoteDetailContent({
     <>
       {/* 제목 카드 */}
       <section className="rounded-2xl bg-surface p-5">
-        <h1 className="text-xl font-bold text-heading">{detail.title}</h1>
+        <CategoryBadge categoryName={detail.categoryName} />
+        <h1 className="mt-3 text-xl font-bold text-heading">{detail.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
           <span>👥 {detail.totalParticipantCount.toLocaleString()}명 참여</span>
           {detail.remainingTime && <span>🕒 {detail.remainingTime} 남음</span>}

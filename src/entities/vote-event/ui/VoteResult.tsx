@@ -1,4 +1,5 @@
-import type { VoteEventDetail, VoteSide } from "../model/types";
+import type { VoteEventDetail } from "../model/types";
+import { Seesaw } from "./Seesaw";
 
 interface VoteResultProps {
   detail: VoteEventDetail;
@@ -6,10 +7,8 @@ interface VoteResultProps {
   amountUnit: "토큰" | "표";
 }
 
-/** 참여 후 실시간 결과 (비율 + 수량 + 내 선택 표시). */
+/** 참여 후 실시간 결과 — 시소 비주얼 + 수량 + 내 선택. */
 export function VoteResult({ detail, amountUnit }: VoteResultProps) {
-  const aRatio = detail.optionARatio ?? 0;
-  const bRatio = detail.optionBRatio ?? 0;
   const selectedLabel =
     detail.selectedOption === "A" ? detail.optionA : detail.optionB;
 
@@ -19,21 +18,7 @@ export function VoteResult({ detail, amountUnit }: VoteResultProps) {
         실시간 투표 결과
       </h2>
 
-      <div className="flex items-stretch gap-2">
-        <ResultBox
-          side="A"
-          label={detail.optionA}
-          ratio={aRatio}
-          imageUrl={detail.optionAImageUrl}
-        />
-        <span className="self-center text-xs font-semibold text-muted">vs</span>
-        <ResultBox
-          side="B"
-          label={detail.optionB}
-          ratio={bRatio}
-          imageUrl={detail.optionBImageUrl}
-        />
-      </div>
+      <Seesaw detail={detail} />
 
       <div className="flex justify-between text-xs text-muted">
         <span>{formatAmount(detail.optionAResultAmount, amountUnit)}</span>
@@ -46,37 +31,6 @@ export function VoteResult({ detail, amountUnit }: VoteResultProps) {
         </p>
       )}
     </section>
-  );
-}
-
-function ResultBox({
-  side,
-  label,
-  ratio,
-  imageUrl,
-}: {
-  side: VoteSide;
-  label: string;
-  ratio: number;
-  imageUrl: string | null;
-}) {
-  const tone =
-    side === "A" ? "bg-indigo-50 text-indigo-500" : "bg-rose-50 text-rose-400";
-
-  return (
-    <div
-      className={`flex flex-1 flex-col items-center gap-1 rounded-2xl p-4 ${tone}`}
-    >
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt={label}
-          className="mb-1 h-20 w-full rounded-xl object-cover"
-        />
-      )}
-      <span className="text-2xl font-bold">{ratio}%</span>
-      <span className="text-sm font-medium">{label}</span>
-    </div>
   );
 }
 
