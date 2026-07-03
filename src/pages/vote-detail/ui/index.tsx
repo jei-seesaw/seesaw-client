@@ -1,3 +1,4 @@
+import { ChevronLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   AffiliationStats,
@@ -19,9 +20,9 @@ export default function VoteDetailPage() {
         <button
           onClick={() => navigate(-1)}
           aria-label="뒤로"
-          className="text-xl text-muted"
+          className="-ml-2 rounded-full p-2 text-heading transition hover:bg-gray-100"
         >
-          ‹
+          <ChevronLeft size={24} />
         </button>
       </header>
 

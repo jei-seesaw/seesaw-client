@@ -48,14 +48,14 @@ export function VoteEventBoard() {
       <div className="flex items-center gap-3 text-lg font-bold">
         <button
           onClick={() => setTab("ongoing")}
-          className={tab === "ongoing" ? "text-heading" : "text-muted"}
+          className={`transition ${tab === "ongoing" ? "text-heading" : "text-muted hover:text-heading"}`}
         >
           진행중인 투표
         </button>
         <span className="text-border">|</span>
         <button
           onClick={() => setTab("completed")}
-          className={tab === "completed" ? "text-heading" : "text-muted"}
+          className={`transition ${tab === "completed" ? "text-heading" : "text-muted hover:text-heading"}`}
         >
           완료된 투표
         </button>

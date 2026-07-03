@@ -16,6 +16,14 @@ body {
   @apply bg-canvas text-heading font-sans;
 }
 
+/* Tailwind v4는 버튼 기본 커서가 default라, 활성 버튼엔 pointer를 준다.
+   (base 레이어라 cursor-* 유틸리티가 필요하면 그대로 덮어씀) */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 @keyframes sheet-up {
   from {
     transform: translateY(100%);

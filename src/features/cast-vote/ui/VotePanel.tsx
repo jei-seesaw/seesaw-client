@@ -81,7 +81,7 @@ export function VotePanel({ voteEventId, detail, isBetting }: VotePanelProps) {
         type="button"
         onClick={handleSubmit}
         disabled={!selected || isPending}
-        className="rounded-xl bg-heading py-3.5 text-sm font-semibold text-white transition disabled:bg-gray-300"
+        className="rounded-xl bg-heading py-3.5 text-sm font-semibold text-white transition hover:brightness-125 disabled:bg-gray-300 disabled:hover:brightness-100"
       >
         {selected ? `"${selectedLabel}" 선택하기` : "선택지를 골라주세요"}
       </button>
@@ -123,7 +123,7 @@ function SelectButton({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-xl py-3 text-sm font-semibold transition ${tone}`}
+      className={`rounded-xl py-3 text-sm font-semibold transition hover:brightness-95 ${tone}`}
     >
       {selected ? "✓ " : ""}
       {label}
@@ -188,7 +188,7 @@ function TokenBetSheet({
           <button
             type="button"
             onClick={() => change(balance)}
-            className="flex-1 rounded-full bg-rose-50 py-2 text-xs font-semibold text-rose-500"
+            className="flex-1 rounded-full bg-rose-50 py-2 text-xs font-semibold text-rose-500 transition hover:bg-rose-100"
           >
             전액
           </button>
@@ -220,7 +220,7 @@ function StepButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-xl font-bold text-heading shadow-sm"
+      className="flex h-11 w-11 items-center justify-center rounded-full bg-surface text-xl font-bold text-heading shadow-sm transition hover:bg-gray-50"
     >
       {children}
     </button>
@@ -238,7 +238,7 @@ function QuickButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex-1 rounded-full bg-surface py-2 text-xs font-semibold text-heading shadow-sm"
+      className="flex-1 rounded-full bg-surface py-2 text-xs font-semibold text-heading shadow-sm transition hover:bg-gray-50"
     >
       {children}
     </button>

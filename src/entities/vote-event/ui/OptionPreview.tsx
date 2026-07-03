@@ -28,7 +28,7 @@ export function OptionPreview({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-1 flex-col items-center gap-2 rounded-2xl p-4 transition ${tone} ${ring}`}
+      className={`flex flex-1 flex-col items-center gap-2 rounded-2xl p-4 transition hover:brightness-95 ${tone} ${ring}`}
     >
       {imageUrl && (
         <img

@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
   CategoryBadge,
@@ -27,7 +28,10 @@ export function FeaturedVote() {
 
 function FeaturedVoteCard({ vote }: { vote: VoteEventListItem }) {
   return (
-    <article className="flex flex-col gap-6 rounded-3xl bg-surface p-7 shadow-sm">
+    <Link
+      to={`/votes/${vote.id}`}
+      className="flex flex-col gap-6 rounded-3xl bg-surface p-7 shadow-sm transition hover:shadow-md"
+    >
       <header className="flex items-center justify-between">
         <CategoryBadge categoryName={vote.categoryName} />
         <span className="text-sm text-muted">🕒 {vote.remainingTime}</span>
@@ -46,13 +50,10 @@ function FeaturedVoteCard({ vote }: { vote: VoteEventListItem }) {
             🪙 {vote.totalTokenAmount.toLocaleString()} 토큰
           </span>
         )}
-        <Link
-          to={`/votes/${vote.id}`}
-          className="font-semibold text-primary hover:underline"
-        >
-          투표하기 →
-        </Link>
+        <span className="flex items-center gap-1 font-semibold text-primary">
+          투표하기 <ArrowRight size={16} />
+        </span>
       </footer>
-    </article>
+    </Link>
   );
 }
