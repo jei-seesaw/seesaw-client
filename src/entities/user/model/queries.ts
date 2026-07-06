@@ -1,6 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { getNicknameAvailability } from "../api/userApi";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  getNicknameAvailability,
+  getNicknameSuggestion,
+} from "../api/userApi";
 import { userKeys } from "./queryKeys";
+
+/** 클릭 시 추천 닉네임을 받아온다 (서버가 사용 가능한 값만 반환). */
+export function useNicknameSuggestion() {
+  return useMutation({ mutationFn: getNicknameSuggestion });
+}
 
 /**
  * Checks nickname availability. Disabled while `nickname` is empty so it only

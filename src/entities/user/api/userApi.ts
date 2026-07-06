@@ -9,3 +9,7 @@ export function getNicknameAvailability(
     `/users/nickname-availability?${query}`,
   );
 }
+
+export function getNicknameSuggestion(): Promise<{ nickname: string }> {
+  return httpClient.get<{ nickname: string }>("/users/nickname-suggestion");
+}

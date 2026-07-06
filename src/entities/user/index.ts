@@ -1,4 +1,7 @@
 export type { NicknameAvailability } from "./model/types";
-export { getNicknameAvailability } from "./api/userApi";
+export { getNicknameAvailability, getNicknameSuggestion } from "./api/userApi";
 export { userKeys } from "./model/queryKeys";
-export { useNicknameAvailabilityQuery } from "./model/queries";
+export {
+  useNicknameAvailabilityQuery,
+  useNicknameSuggestion,
+} from "./model/queries";

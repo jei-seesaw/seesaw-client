@@ -1,8 +1,12 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { RefreshCw } from "lucide-react";
 import { Modal } from "@/shared/ui";
 import { validatePassword } from "@/shared/lib";
 import { useAffiliationsQuery } from "@/entities/affiliation";
-import { useNicknameAvailabilityQuery } from "@/entities/user";
+import {
+  useNicknameAvailabilityQuery,
+  useNicknameSuggestion,
+} from "@/entities/user";
 import { getLoginErrorMessage, getRegisterErrorMessage, useLogin, useRegister } from "../model/useAuth";
 import type { AuthTab } from "../model/types";
 
@@ -25,6 +29,21 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const trimmedNickname = nickname.trim();
   const [checkedNickname, setCheckedNickname] = useState("");
   const nicknameQuery = useNicknameAvailabilityQuery(tab === "register" ? checkedNickname : "");
+  const suggestion = useNicknameSuggestion();
+
+  // 회원가입 탭에 처음 들어오면 추천 닉네임을 한 번 자동으로 채운다.
+  const hasAutoSuggested = useRef(false);
+  useEffect(() => {
+    if (open && tab === "register" && !hasAutoSuggested.current) {
+      hasAutoSuggested.current = true;
+      suggestion.mutate(undefined, {
+        onSuccess: ({ nickname: suggested }) => {
+          setNickname(suggested);
+          setCheckedNickname(suggested);
+        },
+      });
+    }
+  }, [open, tab, suggestion]);
 
   // 확인한 닉네임이 현재 입력과 같아야 유효 (입력이 바뀌면 다시 확인 필요)
   const nicknameChecked = tab === "register" && checkedNickname.length > 0 && checkedNickname === trimmedNickname;
@@ -58,6 +77,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setPassword("");
     setAffiliationCode("");
     setCheckedNickname("");
+    hasAutoSuggested.current = false;
     loginMutation.reset();
     registerMutation.reset();
     onClose();
@@ -73,8 +93,24 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     setCheckedNickname("");
   }
 
+  // 추천 닉네임은 서버가 사용 가능한 값만 주므로 바로 확인 완료 처리
+  function handleSuggestNickname() {
+    suggestion.mutate(undefined, {
+      onSuccess: ({ nickname: suggested }) => {
+        setNickname(suggested);
+        setCheckedNickname(suggested);
+      },
+    });
+  }
+
   function switchTab(next: AuthTab) {
     setTab(next);
+    // 탭이 바뀌면 입력값을 초기화 (가입 탭으로 가면 추천이 다시 채운다)
+    setNickname("");
+    setPassword("");
+    setAffiliationCode("");
+    setCheckedNickname("");
+    hasAutoSuggested.current = false;
     loginMutation.reset();
     registerMutation.reset();
   }
@@ -120,6 +156,21 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 disabled={nicknameAvailable}
               />
             </div>
+            {tab === "register" && (
+              <button
+                type="button"
+                onClick={handleSuggestNickname}
+                disabled={suggestion.isPending}
+                aria-label="닉네임 새로고침"
+                title="다른 닉네임 추천"
+                className="flex shrink-0 items-center justify-center rounded-xl bg-gray-100 px-3 text-muted transition hover:bg-gray-200 disabled:opacity-50"
+              >
+                <RefreshCw
+                  size={16}
+                  className={suggestion.isPending ? "animate-spin" : ""}
+                />
+              </button>
+            )}
             {tab === "register" &&
               (nicknameAvailable ? (
                 <button
