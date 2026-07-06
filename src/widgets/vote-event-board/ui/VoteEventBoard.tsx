@@ -51,15 +51,13 @@ export function VoteEventBoard() {
       ? undefined
       : VOTE_CATEGORIES.find((c) => c.label === category)?.code;
 
-  // 모든 목록 엔드포인트가 sort·category를 지원하므로 서버 파라미터로 전달
+  // 모든 목록 엔드포인트가 sort·category를 지원하므로 서버 파라미터로 전달.
+  // 네 탭 모두 미리 조회(프리페치)해 두어 탭 전환 시 캐시에서 즉시 표시된다.
   const params = { sort, category: categoryCode };
   const ongoing = useOngoingVoteEventsQuery(params);
-  const completed = useCompletedVoteEventsQuery(params, activeTab === "completed");
-  const created = useMyCreatedVoteEventsQuery(params, activeTab === "created");
-  const participated = useMyParticipatedVoteEventsQuery(
-    params,
-    activeTab === "participated",
-  );
+  const completed = useCompletedVoteEventsQuery(params);
+  const created = useMyCreatedVoteEventsQuery(params);
+  const participated = useMyParticipatedVoteEventsQuery(params);
 
   const query =
     activeTab === "ongoing"
