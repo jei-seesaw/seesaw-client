@@ -1,5 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { useLiveRemaining } from "@/shared/lib";
 import type { VoteEventListItem } from "../model/types";
 import { CategoryBadge } from "./CategoryBadge";
 import { VoteOptionPair } from "./VoteOptionPair";
@@ -8,17 +9,22 @@ interface VoteEventCardProps {
   item: VoteEventListItem;
   /** 완료된 투표처럼 결과가 이미 공개된 경우 true. */
   revealResults?: boolean;
+  /** 목록을 받은 시각(ms) — 타이머 앵커용. */
+  anchorMs?: number;
 }
 
 /**
  * 목록 그리드용 투표 카드.
- * memo: 탭/카테고리 변경 시 리스트가 재렌더돼도 props(item·revealResults)가
+ * memo: 탭/카테고리 변경 시 리스트가 재렌더돼도 props가
  * 그대로면 카드는 재렌더되지 않는다. (item은 쿼리 캐시에서 안정적 참조)
  */
 export const VoteEventCard = memo(function VoteEventCard({
   item,
   revealResults = false,
+  anchorMs,
 }: VoteEventCardProps) {
+  const remaining = useLiveRemaining(item.remainingTime, anchorMs);
+
   return (
     <Link
       to={`/votes/${item.id}`}
@@ -26,7 +32,11 @@ export const VoteEventCard = memo(function VoteEventCard({
     >
       <header className="flex items-center justify-between">
         <CategoryBadge categoryName={item.categoryName} />
-        <span className="text-xs text-muted">🕒 {item.remainingTime}</span>
+        <span
+          className={`text-xs ${remaining.urgent ? "font-semibold text-red-500" : "text-muted"}`}
+        >
+          🕒 {remaining.label}
+        </span>
       </header>
 
       <h3 className="text-base font-bold text-heading">{item.title}</h3>

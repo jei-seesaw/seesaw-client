@@ -1,5 +1,6 @@
 import { ChevronLeft } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useLiveRemaining } from "@/shared/lib";
 import {
   AffiliationStats,
   CategoryBadge,
@@ -12,7 +13,12 @@ import { VotePanel } from "@/features/cast-vote";
 export default function VoteDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const { data: detail, isLoading, isError } = useVoteEventDetailQuery(id);
+  const {
+    data: detail,
+    isLoading,
+    isError,
+    dataUpdatedAt,
+  } = useVoteEventDetailQuery(id);
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -35,7 +41,13 @@ export default function VoteDetailPage() {
             투표를 불러오지 못했어요.
           </p>
         )}
-        {detail && <VoteDetailContent voteEventId={id} detail={detail} />}
+        {detail && (
+          <VoteDetailContent
+            voteEventId={id}
+            detail={detail}
+            anchorMs={dataUpdatedAt}
+          />
+        )}
       </main>
     </div>
   );
@@ -44,13 +56,16 @@ export default function VoteDetailPage() {
 function VoteDetailContent({
   voteEventId,
   detail,
+  anchorMs,
 }: {
   voteEventId: string;
   detail: VoteEventDetail;
+  anchorMs: number;
 }) {
   const isBetting = detail.categoryName === "배팅";
   const amountUnit = isBetting ? "토큰" : "표";
   const hasVoted = detail.isParticipated;
+  const remaining = useLiveRemaining(detail.remainingTime ?? "", anchorMs);
 
   return (
     <>
@@ -60,7 +75,11 @@ function VoteDetailContent({
         <h1 className="mt-3 text-xl font-bold text-heading">{detail.title}</h1>
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
           <span>👥 {detail.totalParticipantCount.toLocaleString()}명 참여</span>
-          {detail.remainingTime && <span>🕒 {detail.remainingTime} 남음</span>}
+          {detail.remainingTime && (
+            <span className={remaining.urgent ? "font-semibold text-red-500" : undefined}>
+              🕒 {remaining.label}
+            </span>
+          )}
           {isBetting && detail.totalTokenAmount != null && (
             <span className="font-semibold text-emerald-600">
               🪙 {detail.totalTokenAmount.toLocaleString()} 토큰

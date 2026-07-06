@@ -1,5 +1,6 @@
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLiveRemaining } from "@/shared/lib";
 import {
   CategoryBadge,
   VoteOptionPair,
@@ -8,7 +9,7 @@ import {
 } from "@/entities/vote-event";
 
 export function FeaturedVote() {
-  const { data, isLoading } = useOngoingVoteEventsQuery();
+  const { data, isLoading, dataUpdatedAt } = useOngoingVoteEventsQuery();
 
   if (isLoading) {
     return <div className="h-52 animate-pulse rounded-3xl bg-surface" />;
@@ -23,10 +24,18 @@ export function FeaturedVote() {
     );
   }
 
-  return <FeaturedVoteCard vote={vote} />;
+  return <FeaturedVoteCard vote={vote} anchorMs={dataUpdatedAt} />;
 }
 
-function FeaturedVoteCard({ vote }: { vote: VoteEventListItem }) {
+function FeaturedVoteCard({
+  vote,
+  anchorMs,
+}: {
+  vote: VoteEventListItem;
+  anchorMs: number;
+}) {
+  const remaining = useLiveRemaining(vote.remainingTime, anchorMs);
+
   return (
     <Link
       to={`/votes/${vote.id}`}
@@ -34,7 +43,11 @@ function FeaturedVoteCard({ vote }: { vote: VoteEventListItem }) {
     >
       <header className="flex items-center justify-between">
         <CategoryBadge categoryName={vote.categoryName} />
-        <span className="text-sm text-muted">🕒 {vote.remainingTime}</span>
+        <span
+          className={`text-sm ${remaining.urgent ? "font-semibold text-red-500" : "text-muted"}`}
+        >
+          🕒 {remaining.label}
+        </span>
       </header>
 
       <h2 className="text-2xl font-bold text-heading">{vote.title}</h2>

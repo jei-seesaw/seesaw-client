@@ -149,6 +149,7 @@ export function VoteEventBoard() {
               key={item.id}
               item={item}
               revealResults={activeTab === "completed"}
+              anchorMs={query.dataUpdatedAt}
             />
           ))}
         </div>
