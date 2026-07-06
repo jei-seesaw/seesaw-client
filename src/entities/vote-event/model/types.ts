@@ -1,3 +1,5 @@
+import type { VoteCategoryCode } from "./category";
+
 export interface VoteEventListItem {
   id: string;
   categoryName: string;
@@ -21,6 +23,22 @@ export type VoteSide = "A" | "B";
 export interface VoteEventsPageInfo {
   hasNext: boolean;
   nextCursor: string | null;
+}
+
+/** 커서 기반 페이지네이션 목록 (완료/내 투표 공통 형태). */
+export interface PagedVoteEvents {
+  voteEvents: VoteEventListItem[];
+  pageInfo: VoteEventsPageInfo;
+}
+
+export type MyVoteSort = "latest" | "deadline" | "participants";
+
+export interface MyVoteEventsParams {
+  /** latest=최신순, deadline=마감임박순, participants=참여자순. */
+  sort?: MyVoteSort;
+  category?: VoteCategoryCode;
+  limit?: number;
+  cursor?: string;
 }
 
 export interface AffiliationStat {

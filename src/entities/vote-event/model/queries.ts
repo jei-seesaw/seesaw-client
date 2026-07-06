@@ -1,10 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
+import { isAuthenticated } from "@/shared/lib";
 import {
   getCompletedVoteEvents,
+  getMyCreatedVoteEvents,
+  getMyParticipatedVoteEvents,
   getOngoingVoteEvents,
   getVoteEventDetail,
 } from "../api/voteEventApi";
 import { voteEventKeys } from "./queryKeys";
+import type { MyVoteEventsParams } from "./types";
+
+/** 내가 만든 투표 목록 (로그인 필요). */
+export function useMyCreatedVoteEventsQuery(
+  params: MyVoteEventsParams = {},
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: voteEventKeys.myCreated(params),
+    queryFn: () => getMyCreatedVoteEvents(params),
+    enabled: enabled && isAuthenticated(),
+  });
+}
+
+/** 내가 참여한 투표 목록 (로그인 필요). */
+export function useMyParticipatedVoteEventsQuery(
+  params: MyVoteEventsParams = {},
+  enabled = true,
+) {
+  return useQuery({
+    queryKey: voteEventKeys.myParticipated(params),
+    queryFn: () => getMyParticipatedVoteEvents(params),
+    enabled: enabled && isAuthenticated(),
+  });
+}
 
 export function useVoteEventDetailQuery(id: string) {
   return useQuery({

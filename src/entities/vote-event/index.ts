@@ -3,6 +3,9 @@ export type {
   VoteEventsPageInfo,
   OngoingVoteEvents,
   CompletedVoteEvents,
+  PagedVoteEvents,
+  MyVoteEventsParams,
+  MyVoteSort,
   VoteEventDetail,
   AffiliationStat,
   VoteSide,
@@ -11,6 +14,8 @@ export {
   getOngoingVoteEvents,
   getCompletedVoteEvents,
   getVoteEventDetail,
+  getMyCreatedVoteEvents,
+  getMyParticipatedVoteEvents,
 } from "./api/voteEventApi";
 export { voteEventKeys } from "./model/queryKeys";
 export {
@@ -24,6 +29,8 @@ export {
   useOngoingVoteEventsQuery,
   useCompletedVoteEventsQuery,
   useVoteEventDetailQuery,
+  useMyCreatedVoteEventsQuery,
+  useMyParticipatedVoteEventsQuery,
 } from "./model/queries";
 export { CategoryBadge } from "./ui/CategoryBadge";
 export { VoteOptionPair } from "./ui/VoteOptionPair";
