@@ -70,12 +70,8 @@ export function VoteEventBoard() {
 
   // 탭에 맞는 목록을 단일 배열로 평탄화
   const items = useMemo<VoteEventListItem[]>(() => {
-    if (activeTab === "ongoing") {
-      if (!ongoing.data) return [];
-      return [ongoing.data.mainVote, ...ongoing.data.otherVoteEvents].filter(
-        (v): v is VoteEventListItem => v !== null,
-      );
-    }
+    // 핫한 투표(mainVote)는 위 히어로에서 보여주므로 목록엔 나머지만 노출
+    if (activeTab === "ongoing") return ongoing.data?.otherVoteEvents ?? [];
     if (activeTab === "completed") return completed.data?.voteEvents ?? [];
     if (activeTab === "created") return created.data?.voteEvents ?? [];
     return participated.data?.voteEvents ?? [];
