@@ -51,15 +51,13 @@ export function VoteEventBoard() {
       ? undefined
       : VOTE_CATEGORIES.find((c) => c.label === category)?.code;
 
-  const ongoing = useOngoingVoteEventsQuery();
-  const completed = useCompletedVoteEventsQuery(activeTab === "completed");
-  // 내 목록은 서버가 sort·category를 지원하므로 파라미터로 전달
-  const created = useMyCreatedVoteEventsQuery(
-    { sort, category: categoryCode },
-    activeTab === "created",
-  );
+  // 모든 목록 엔드포인트가 sort·category를 지원하므로 서버 파라미터로 전달
+  const params = { sort, category: categoryCode };
+  const ongoing = useOngoingVoteEventsQuery(params);
+  const completed = useCompletedVoteEventsQuery(params, activeTab === "completed");
+  const created = useMyCreatedVoteEventsQuery(params, activeTab === "created");
   const participated = useMyParticipatedVoteEventsQuery(
-    { sort, category: categoryCode },
+    params,
     activeTab === "participated",
   );
 
@@ -85,19 +83,6 @@ export function VoteEventBoard() {
     return participated.data?.voteEvents ?? [];
   }, [activeTab, ongoing.data, completed.data, created.data, participated.data]);
 
-  const visible = useMemo(() => {
-    const byCategory =
-      category === ALL_CATEGORY
-        ? items
-        : items.filter((item) => item.categoryName === category);
-    // 공개 목록은 서버 정렬 미지원 → 참여자순만 클라이언트 정렬로 보정
-    if (sort === "participants") {
-      return [...byCategory].sort(
-        (a, b) => b.totalParticipantCount - a.totalParticipantCount,
-      );
-    }
-    return byCategory;
-  }, [items, category, sort]);
 
   return (
     <section className="flex flex-col gap-5">
@@ -159,13 +144,13 @@ export function VoteEventBoard() {
       {/* 그리드 */}
       {query.isLoading ? (
         <p className="py-10 text-center text-sm text-muted">불러오는 중…</p>
-      ) : visible.length === 0 ? (
+      ) : items.length === 0 ? (
         <p className="py-10 text-center text-sm text-muted">
           표시할 투표가 없어요.
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {visible.map((item) => (
+          {items.map((item) => (
             <VoteEventCard
               key={item.id}
               item={item}

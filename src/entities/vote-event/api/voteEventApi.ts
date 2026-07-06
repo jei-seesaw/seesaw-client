@@ -17,12 +17,20 @@ function toQuery(params: MyVoteEventsParams): string {
   return query ? `?${query}` : "";
 }
 
-export function getOngoingVoteEvents(): Promise<OngoingVoteEvents> {
-  return httpClient.get<OngoingVoteEvents>("/ongoing-vote-events");
+export function getOngoingVoteEvents(
+  params: MyVoteEventsParams = {},
+): Promise<OngoingVoteEvents> {
+  return httpClient.get<OngoingVoteEvents>(
+    `/ongoing-vote-events${toQuery(params)}`,
+  );
 }
 
-export function getCompletedVoteEvents(): Promise<CompletedVoteEvents> {
-  return httpClient.get<CompletedVoteEvents>("/completed-vote-events");
+export function getCompletedVoteEvents(
+  params: MyVoteEventsParams = {},
+): Promise<CompletedVoteEvents> {
+  return httpClient.get<CompletedVoteEvents>(
+    `/completed-vote-events${toQuery(params)}`,
+  );
 }
 
 export function getVoteEventDetail(id: string): Promise<VoteEventDetail> {

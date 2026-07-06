@@ -18,7 +18,7 @@ interface VotePanelProps {
 export function VotePanel({ voteEventId, detail, isBetting }: VotePanelProps) {
   const [selected, setSelected] = useState<VoteSide | null>(null);
   const [betOpen, setBetOpen] = useState(false);
-  const { mutate, isPending } = useCastVote(voteEventId);
+  const { mutate, isPending } = useCastVote();
   const { data: home } = useHomeSummaryQuery();
   const balance = home?.voteToken ?? 0;
 

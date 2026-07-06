@@ -8,7 +8,7 @@ export function useCreateVoteEvent() {
   return useMutation({
     mutationFn: createVoteEvent,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: voteEventKeys.ongoing() });
+      queryClient.invalidateQueries({ queryKey: voteEventKeys.all });
       queryClient.invalidateQueries({ queryKey: homeKeys.summary });
     },
   });

@@ -42,18 +42,21 @@ export function useVoteEventDetailQuery(id: string) {
   });
 }
 
-export function useOngoingVoteEventsQuery() {
+export function useOngoingVoteEventsQuery(params: MyVoteEventsParams = {}) {
   return useQuery({
-    queryKey: voteEventKeys.ongoing(),
-    queryFn: getOngoingVoteEvents,
+    queryKey: voteEventKeys.ongoing(params),
+    queryFn: () => getOngoingVoteEvents(params),
   });
 }
 
 /** 완료 목록은 완료 탭을 열었을 때만 조회하도록 enabled로 게이팅한다. */
-export function useCompletedVoteEventsQuery(enabled = true) {
+export function useCompletedVoteEventsQuery(
+  params: MyVoteEventsParams = {},
+  enabled = true,
+) {
   return useQuery({
-    queryKey: voteEventKeys.completed(),
-    queryFn: getCompletedVoteEvents,
+    queryKey: voteEventKeys.completed(params),
+    queryFn: () => getCompletedVoteEvents(params),
     enabled,
   });
 }
