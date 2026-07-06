@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { ChevronDown } from "lucide-react";
-import { BottomSheet } from "@/shared/ui";
+import { ChevronLeft, X } from "lucide-react";
+import { BottomSheet, WheelPicker } from "@/shared/ui";
 import { HttpError } from "@/shared/api";
 import { VOTE_CATEGORIES, type VoteCategoryCode } from "@/entities/vote-event";
 import { useCreateVoteEvent } from "../model/useCreateVoteEvent";
@@ -32,12 +32,8 @@ export function CreateVoteModal({ open, onClose }: CreateVoteModalProps) {
   const { mutate, isPending, error, reset: resetMutation } = useCreateVoteEvent();
 
   // 모달을 열 때 기준으로 마감 후보(정각)를 계산. 기본값은 마지막(=최대 24시간).
-  const deadlineOptions = useMemo(
-    () => (open ? buildDeadlineOptions(new Date()) : []),
-    [open],
-  );
-  const effectiveDeadline =
-    deadlineAt || deadlineOptions[deadlineOptions.length - 1]?.value || "";
+  const deadlineOptions = useMemo(() => (open ? buildDeadlineOptions(new Date()) : []), [open]);
+  const effectiveDeadline = deadlineAt || deadlineOptions[deadlineOptions.length - 1]?.value || "";
 
   function handleClose() {
     setStep("category");
@@ -76,36 +72,32 @@ export function CreateVoteModal({ open, onClose }: CreateVoteModalProps) {
 
   return (
     <BottomSheet open={open} onClose={handleClose}>
-      <header className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+      <header className="mb-5 grid grid-cols-[1fr_auto_1fr] items-center">
+        <div className="justify-self-start">
           {step === "details" && (
             <button
               type="button"
               onClick={() => setStep("category")}
               aria-label="뒤로"
-              className="text-muted"
+              className="-ml-2 rounded-full p-1.5 text-heading transition hover:bg-gray-100"
             >
-              ‹
+              <ChevronLeft size={22} />
             </button>
           )}
-          <h2 className="text-lg font-bold text-heading">투표 만들기</h2>
         </div>
+        <h2 className="text-lg font-bold text-heading">투표 만들기</h2>
         <button
           type="button"
           onClick={handleClose}
           aria-label="닫기"
-          className="text-muted"
+          className="-mr-2 justify-self-end rounded-full p-1.5 text-muted transition hover:bg-gray-100"
         >
-          ✕
+          <X size={22} />
         </button>
       </header>
 
       {step === "category" ? (
-        <CategoryStep
-          selected={category}
-          onSelect={setCategory}
-          onNext={() => setStep("details")}
-        />
+        <CategoryStep selected={category} onSelect={setCategory} onNext={() => setStep("details")} />
       ) : (
         <DetailsStep
           title={title}
@@ -147,9 +139,7 @@ function CategoryStep({
             type="button"
             onClick={() => onSelect(c.code)}
             className={`flex flex-col gap-1 rounded-2xl border p-4 text-left transition ${
-              selected === c.code
-                ? "border-primary bg-primary/5"
-                : "border-transparent bg-gray-50 hover:bg-gray-100"
+              selected === c.code ? "border-primary bg-primary/5" : "border-transparent bg-gray-50 hover:bg-gray-100"
             }`}
           >
             <span className="text-xl">{c.emoji}</span>
@@ -239,29 +229,19 @@ function DetailsStep({
         </label>
       </div>
 
-      <label className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-heading">마감 시간</span>
-        <div className="relative">
-          <select
+        <div className="rounded-xl bg-gray-50 px-4">
+          <WheelPicker
+            options={deadlineOptions}
             value={deadline}
-            onChange={(e) => onDeadline(e.target.value)}
-            className="w-full appearance-none rounded-xl bg-gray-50 px-4 py-3 pr-10 text-sm text-heading outline-none focus:ring-2 focus:ring-primary/30"
-          >
-            {deadlineOptions.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown
-            size={16}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
+            onChange={onDeadline}
           />
         </div>
         <span className="text-xs text-muted">
-          생성 시점부터 24시간 이내, 정각 단위로 마감돼요.
+          위아래로 넘겨 정각을 선택하세요. (생성 시점부터 24시간 이내)
         </span>
-      </label>
+      </div>
 
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
 

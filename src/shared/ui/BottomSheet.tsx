@@ -11,17 +11,13 @@ export function BottomSheet({ open, onClose, children }: BottomSheetProps) {
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/30"
-      onClick={onClose}
-    >
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30" onClick={onClose}>
       <div
         className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-surface p-6 pb-8 shadow-xl animate-[sheet-up_0.28s_ease-out]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
       >
-        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-gray-200" />
         {children}
       </div>
     </div>
