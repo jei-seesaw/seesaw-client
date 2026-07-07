@@ -34,7 +34,7 @@ export function OptionPreview({
         <img
           src={imageUrl}
           alt={label}
-          className="h-24 w-full rounded-xl object-cover"
+          className="aspect-square w-full rounded-xl object-cover"
         />
       )}
       <span className="text-xl font-bold">{selected ? "✓" : "?"}</span>

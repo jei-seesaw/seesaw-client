@@ -14,3 +14,18 @@ export interface CreateVoteEventRequest {
 export interface CreateVoteEventResult {
   id: string;
 }
+
+export interface ImageUploadRequest {
+  bytes: number;
+  contentType: string;
+  purpose: "vote-event-option";
+}
+
+/** POST /image-uploads 응답 (Cloudinary signed upload 값). */
+export interface ImageUploadSignature {
+  allowedContentTypes: string[];
+  expiresAt: string;
+  formFields: Record<string, string | number>;
+  maxBytes: number;
+  uploadUrl: string;
+}
