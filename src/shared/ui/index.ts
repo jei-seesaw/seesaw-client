@@ -4,6 +4,7 @@ export { Modal } from "./Modal";
 export { ConfirmModal } from "./ConfirmModal";
 export { BottomSheet } from "./BottomSheet";
 export { WheelPicker } from "./WheelPicker";
+export { ExpandableImage } from "./ExpandableImage";
 export {
   Select,
   SelectValue,

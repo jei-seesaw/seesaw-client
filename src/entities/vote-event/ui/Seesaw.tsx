@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ExpandableImage } from "@/shared/ui";
 import type { VoteEventDetail, VoteSide } from "../model/types";
 
 const MAX_ANGLE = 11;
@@ -20,25 +21,23 @@ export function Seesaw({ detail }: { detail: VoteEventDetail }) {
   }, [target]);
 
   return (
-    <div className="flex flex-col items-center pt-6">
+    <div className="flex flex-col items-center pt-2">
       <div
         className="mx-auto w-full max-w-sm origin-center transition-transform duration-700 ease-out"
         style={{ transform: `rotate(${angle}deg)` }}
       >
-        <div className="flex items-end">
+        <div className="flex items-stretch gap-3">
           <Seat
             side="A"
             label={detail.optionA}
             ratio={aRatio}
             imageUrl={detail.optionAImageUrl}
-            heavier={aRatio >= bRatio}
           />
           <Seat
             side="B"
             label={detail.optionB}
             ratio={bRatio}
             imageUrl={detail.optionBImageUrl}
-            heavier={bRatio > aRatio}
           />
         </div>
         {/* 시소 널빤지 */}
@@ -55,31 +54,26 @@ function Seat({
   label,
   ratio,
   imageUrl,
-  heavier,
 }: {
   side: VoteSide;
   label: string;
   ratio: number;
   imageUrl: string | null;
-  heavier: boolean;
 }) {
-  const color = side === "A" ? "text-indigo-500" : "text-rose-400";
+  const tone =
+    side === "A" ? "bg-indigo-50 text-indigo-500" : "bg-rose-50 text-rose-400";
 
   return (
-    <div
-      className={`flex flex-1 flex-col items-center gap-1 ${heavier ? "" : "opacity-55"}`}
-    >
+    <div className={`flex-1 overflow-hidden rounded-2xl ${tone}`}>
       {imageUrl && (
-        <img
-          src={imageUrl}
-          alt={label}
-          className="mb-1 h-20 w-24 rounded-2xl object-cover shadow-sm"
-        />
+        <ExpandableImage src={imageUrl} alt={label} className="h-28 w-full" />
       )}
-      <span className={`text-3xl font-extrabold leading-none ${color}`}>
-        {ratio}%
-      </span>
-      <span className={`text-sm font-medium ${color}`}>{label}</span>
+      <div
+        className={`flex flex-col items-center gap-0.5 ${imageUrl ? "py-3" : "py-10"}`}
+      >
+        <span className="text-2xl font-extrabold leading-none">{ratio}%</span>
+        <span className="text-xs font-medium">{label}</span>
+      </div>
     </div>
   );
 }
