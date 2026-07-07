@@ -107,12 +107,24 @@ function VoteDetailContent({
           <AffiliationStats stats={detail.affiliationStats} />
         )}
 
-      {/* 참여자(비주최자) 배팅: 확정+참여 시 내 배팅 결과+수령, 아니면 예상 배당 */}
+      {/* 주최자: 배팅 현황 + 정답 확정 */}
+      {isBetting && detail.isOrganizer && (
+        <BettingResultPanel
+          voteEventId={voteEventId}
+          optionA={detail.optionA}
+          optionB={detail.optionB}
+          amountA={detail.optionAResultAmount ?? 0}
+          amountB={detail.optionBResultAmount ?? 0}
+          confirmedOption={detail.bettingResultOption}
+          canConfirm={detail.canConfirmBettingResult}
+        />
+      )}
+
+      {/* 배팅 보상 — 참여자(주최자 포함)는 확정 후 내 배팅 결과+수령, 그 외는 예상 배당 */}
       {showResults &&
         isBetting &&
-        !detail.isOrganizer &&
-        (detail.bettingResultOption &&
-        detail.isParticipated &&
+        (detail.isParticipated &&
+        detail.bettingResultOption &&
         detail.bettingInfo ? (
           <MyBettingResultPanel
             voteEventId={voteEventId}
@@ -126,21 +138,8 @@ function VoteDetailContent({
             info={detail.bettingInfo}
           />
         ) : (
-          <Payout detail={detail} />
+          !detail.isOrganizer && <Payout detail={detail} />
         ))}
-
-      {/* 주최자: 배팅 현황 + 정답 확정 */}
-      {isBetting && detail.isOrganizer && (
-        <BettingResultPanel
-          voteEventId={voteEventId}
-          optionA={detail.optionA}
-          optionB={detail.optionB}
-          amountA={detail.optionAResultAmount ?? 0}
-          amountB={detail.optionBResultAmount ?? 0}
-          confirmedOption={detail.bettingResultOption}
-          canConfirm={detail.canConfirmBettingResult}
-        />
-      )}
 
       {/* 익명 토론 */}
       <Discussion locked={!hasVoted} />
