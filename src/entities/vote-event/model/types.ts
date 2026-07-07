@@ -68,6 +68,13 @@ export interface VoteEventDetail {
   isParticipated: boolean;
   selectedOption: VoteSide | null;
   totalTokenAmount: number | null;
+  /** 내가 만든(주최한) 투표인지. */
+  isOrganizer: boolean;
+  /** 지금 배팅 결과를 확정할 수 있는지 (배팅·마감·미확정 등). */
+  canConfirmBettingResult: boolean;
+  /** 확정된 배팅 정답 (미확정이면 null). */
+  bettingResultOption: VoteSide | null;
+  bettingResultConfirmedAt: string | null;
 }
 
 /** GET /ongoing-vote-events */
