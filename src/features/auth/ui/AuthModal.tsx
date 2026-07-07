@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { RefreshCw } from "lucide-react";
-import { Modal } from "@/shared/ui";
+import { RefreshCw, Star } from "lucide-react";
+import {
+  Modal,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/ui";
 import { validatePassword } from "@/shared/lib";
 import { useAffiliationsQuery } from "@/entities/affiliation";
-import {
-  useNicknameAvailabilityQuery,
-  useNicknameSuggestion,
-} from "@/entities/user";
+import { useNicknameAvailabilityQuery, useNicknameSuggestion } from "@/entities/user";
 import { getLoginErrorMessage, getRegisterErrorMessage, useLogin, useRegister } from "../model/useAuth";
 import type { AuthTab } from "../model/types";
 
@@ -22,6 +26,14 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const [affiliationCode, setAffiliationCode] = useState("");
 
   const affiliations = useAffiliationsQuery();
+  const affiliationOptions = (affiliations.data ?? []).map((a) => ({
+    value: a.code,
+    label: a.name,
+  }));
+  // 휠은 항상 하나가 중앙에 오므로, 미선택이면 재능교육(없으면 첫 소속)을 기본값으로
+  const defaultAffiliation =
+    affiliationOptions.find((o) => o.label === "재능교육")?.value ?? affiliationOptions[0]?.value ?? "";
+  const effectiveAffiliation = affiliationCode || defaultAffiliation;
   const loginMutation = useLogin();
   const registerMutation = useRegister();
 
@@ -69,7 +81,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
   const canSubmit = Boolean(
     tab === "login"
       ? trimmedNickname && passwordCheck.valid && !pending
-      : trimmedNickname && passwordCheck.valid && affiliationCode && nicknameAvailable && !pending,
+      : trimmedNickname && passwordCheck.valid && effectiveAffiliation && nicknameAvailable && !pending,
   );
 
   function handleClose() {
@@ -122,7 +134,10 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     if (tab === "login") {
       loginMutation.mutate({ nickname, password }, { onSuccess: handleClose });
     } else {
-      registerMutation.mutate({ nickname, password, affiliationCode }, { onSuccess: handleClose });
+      registerMutation.mutate(
+        { nickname, password, affiliationCode: effectiveAffiliation },
+        { onSuccess: handleClose },
+      );
     }
   }
 
@@ -165,10 +180,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
                 title="다른 닉네임 추천"
                 className="flex shrink-0 items-center justify-center rounded-xl bg-gray-100 px-3 text-muted transition hover:bg-gray-200 disabled:opacity-50"
               >
-                <RefreshCw
-                  size={16}
-                  className={suggestion.isPending ? "animate-spin" : ""}
-                />
+                <RefreshCw size={16} className={suggestion.isPending ? "animate-spin" : ""} />
               </button>
             )}
             {tab === "register" &&
@@ -217,28 +229,28 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
 
         {tab === "register" && (
           <>
-            <div className="relative">
-              <select
-                value={affiliationCode}
-                onChange={(e) => setAffiliationCode(e.target.value)}
-                className="w-full appearance-none rounded-xl bg-gray-50 px-4 py-3 pr-10 text-sm text-heading outline-none focus:ring-2 focus:ring-primary/30"
+            <div className="flex flex-col gap-1.5">
+              <span className="text-sm font-semibold text-heading">소속</span>
+              <Select
+                value={effectiveAffiliation}
+                onValueChange={setAffiliationCode}
               >
-                <option value="" disabled>
-                  소속
-                </option>
-                {affiliations.data?.map((a) => (
-                  <option key={a.code} value={a.code}>
-                    {a.name}
-                  </option>
-                ))}
-              </select>
-              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs text-muted">
-                ▾
-              </span>
+                <SelectTrigger>
+                  <SelectValue placeholder="소속 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {affiliationOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>
+                      {o.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <p className="rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-600">
-              🎉 가입 시 1,000 토큰 증정!
+            <p className="flex items-center justify-start gap-1 rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-medium text-emerald-600">
+              <Star size={12} className="text-emerald-500" />
+              가입 시 1,000 토큰 증정!
             </p>
           </>
         )}

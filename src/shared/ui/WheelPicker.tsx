@@ -9,11 +9,11 @@ interface WheelPickerProps {
   options: WheelOption[];
   value: string;
   onChange: (value: string) => void;
+  /** 보이는 줄 수(홀수). 3이면 위아래 1개씩. 기본 5. */
+  visibleCount?: number;
 }
 
 const ITEM_H = 40; // px
-const VISIBLE = 5; // 홀수
-const PAD = ((VISIBLE - 1) / 2) * ITEM_H;
 const DRAG_THRESHOLD = 4; // px 이상 움직이면 드래그로 간주
 const MOMENTUM_MS = 180; // 관성 투영 시간 (놓을 때 속도 × 이 값만큼 더 이동)
 const IDLE_MS = 60; // 이 시간 이상 멈췄다 놓으면 관성 없음
@@ -27,7 +27,13 @@ function clampIndex(scrollTop: number, length: number): number {
  * - 위/아래 항목 클릭(탭) → 그 항목으로 이동
  * - 마우스 클릭-드래그 → 관성(flick) 스크롤, 터치 드래그·휠도 지원
  */
-export function WheelPicker({ options, value, onChange }: WheelPickerProps) {
+export function WheelPicker({
+  options,
+  value,
+  onChange,
+  visibleCount = 5,
+}: WheelPickerProps) {
+  const pad = ((visibleCount - 1) / 2) * ITEM_H;
   const ref = useRef<HTMLDivElement>(null);
   const didInit = useRef(false);
   const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -120,7 +126,10 @@ export function WheelPicker({ options, value, onChange }: WheelPickerProps) {
   }
 
   return (
-    <div className="relative select-none" style={{ height: VISIBLE * ITEM_H }}>
+    <div
+      className="relative select-none"
+      style={{ height: visibleCount * ITEM_H }}
+    >
       {/* 가운데 선택 밴드 */}
       <div
         className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 rounded-xl bg-primary/10"
@@ -138,7 +147,7 @@ export function WheelPicker({ options, value, onChange }: WheelPickerProps) {
         onPointerUp={handlePointerUp}
         className="no-scrollbar h-full cursor-grab snap-y snap-mandatory overflow-y-scroll active:cursor-grabbing"
       >
-        <div style={{ height: PAD }} />
+        <div style={{ height: pad }} />
         {options.map((o, i) => (
           <div
             key={o.value}
@@ -154,7 +163,7 @@ export function WheelPicker({ options, value, onChange }: WheelPickerProps) {
             {o.label}
           </div>
         ))}
-        <div style={{ height: PAD }} />
+        <div style={{ height: pad }} />
       </div>
     </div>
   );
