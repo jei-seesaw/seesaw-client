@@ -66,6 +66,9 @@ function VoteDetailContent({
   const amountUnit = isBetting ? "토큰" : "표";
   const hasVoted = detail.isParticipated;
   const remaining = useLiveRemaining(detail.remainingTime ?? "", anchorMs);
+  // 마감된 투표는 투표할 수 없고 결과만 본다.
+  const ended = detail.remainingTime == null || remaining.label === "종료";
+  const showResults = hasVoted || ended;
 
   return (
     <>
@@ -88,20 +91,22 @@ function VoteDetailContent({
         </div>
       </section>
 
-      {/* 투표 전: 선택 패널 / 투표 후: 결과 */}
-      {hasVoted ? (
-        <VoteResult detail={detail} amountUnit={amountUnit} />
+      {/* 참여했거나 마감됐으면 결과, 아니면 투표 패널 */}
+      {showResults ? (
+        <VoteResult detail={detail} amountUnit={amountUnit} ended={ended} />
       ) : (
         <VotePanel voteEventId={voteEventId} detail={detail} isBetting={isBetting} />
       )}
 
-      {/* 소속별 통계 (참여 후) */}
-      {hasVoted && detail.affiliationStats && detail.affiliationStats.length > 0 && (
-        <AffiliationStats stats={detail.affiliationStats} />
-      )}
+      {/* 소속별 통계 */}
+      {showResults &&
+        detail.affiliationStats &&
+        detail.affiliationStats.length > 0 && (
+          <AffiliationStats stats={detail.affiliationStats} />
+        )}
 
-      {/* 배당 (배팅 + 참여 후) */}
-      {hasVoted && isBetting && <Payout detail={detail} />}
+      {/* 배당 (배팅) */}
+      {showResults && isBetting && <Payout detail={detail} />}
 
       {/* 익명 토론 */}
       <Discussion locked={!hasVoted} />

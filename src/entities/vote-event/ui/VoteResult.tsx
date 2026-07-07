@@ -5,17 +5,23 @@ interface VoteResultProps {
   detail: VoteEventDetail;
   /** 결과 수량 단위 (배팅=토큰, 그 외=표). */
   amountUnit: "토큰" | "표";
+  /** 마감된 투표면 "최종 투표 결과"로 표기. */
+  ended?: boolean;
 }
 
-/** 참여 후 실시간 결과 — 시소 비주얼 + 수량 + 내 선택. */
-export function VoteResult({ detail, amountUnit }: VoteResultProps) {
+/** 결과 화면 — 시소 위에 (이미지가 있으면) 이미지가 얹혀 기운다. */
+export function VoteResult({
+  detail,
+  amountUnit,
+  ended = false,
+}: VoteResultProps) {
   const selectedLabel =
     detail.selectedOption === "A" ? detail.optionA : detail.optionB;
 
   return (
     <section className="flex flex-col gap-4 rounded-2xl bg-surface p-5">
       <h2 className="text-center text-sm font-semibold text-muted">
-        실시간 투표 결과
+        {ended ? "최종 투표 결과" : "실시간 투표 결과"}
       </h2>
 
       <Seesaw detail={detail} />
