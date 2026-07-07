@@ -10,6 +10,7 @@ import {
 } from "@/entities/vote-event";
 import { VotePanel } from "@/features/cast-vote";
 import { BettingResultPanel } from "@/features/confirm-betting-result";
+import { MyBettingResultPanel } from "@/features/claim-betting-reward";
 
 export default function VoteDetailPage() {
   const { id = "" } = useParams();
@@ -106,8 +107,27 @@ function VoteDetailContent({
           <AffiliationStats stats={detail.affiliationStats} />
         )}
 
-      {/* 배당 (배팅) — 주최자는 아래 배팅 현황 패널로 대체 */}
-      {showResults && isBetting && !detail.isOrganizer && <Payout detail={detail} />}
+      {/* 참여자(비주최자) 배팅: 확정+참여 시 내 배팅 결과+수령, 아니면 예상 배당 */}
+      {showResults &&
+        isBetting &&
+        !detail.isOrganizer &&
+        (detail.bettingResultOption &&
+        detail.isParticipated &&
+        detail.bettingInfo ? (
+          <MyBettingResultPanel
+            voteEventId={voteEventId}
+            winnerLabel={
+              detail.bettingResultOption === "A" ? detail.optionA : detail.optionB
+            }
+            myChoiceLabel={
+              detail.selectedOption === "A" ? detail.optionA : detail.optionB
+            }
+            won={detail.selectedOption === detail.bettingResultOption}
+            info={detail.bettingInfo}
+          />
+        ) : (
+          <Payout detail={detail} />
+        ))}
 
       {/* 주최자: 배팅 현황 + 정답 확정 */}
       {isBetting && detail.isOrganizer && (

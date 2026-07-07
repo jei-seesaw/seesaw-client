@@ -8,6 +8,7 @@ export type {
   MyVoteSort,
   VoteEventDetail,
   AffiliationStat,
+  BettingInfo,
   VoteSide,
 } from "./model/types";
 export {
