@@ -5,6 +5,7 @@ export { ConfirmModal } from "./ConfirmModal";
 export { BottomSheet } from "./BottomSheet";
 export { WheelPicker } from "./WheelPicker";
 export { ExpandableImage } from "./ExpandableImage";
+export { Confetti } from "./Confetti";
 export {
   Select,
   SelectValue,

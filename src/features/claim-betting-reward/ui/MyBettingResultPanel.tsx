@@ -1,4 +1,5 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Confetti } from "@/shared/ui";
 import type { BettingInfo } from "@/entities/vote-event";
 import {
   getClaimErrorMessage,
@@ -25,6 +26,15 @@ export function MyBettingResultPanel({
   info,
 }: MyBettingResultPanelProps) {
   const { mutate, isPending, error } = useClaimBettingReward(voteEventId);
+  const [celebrate, setCelebrate] = useState(false);
+
+  function handleClaim() {
+    mutate(undefined, {
+      onSuccess: (data) => {
+        if (data.earnedTokenAmount > 0) setCelebrate(true);
+      },
+    });
+  }
 
   const earned = won
     ? (info.earnedTokenAmount ?? Math.round(info.myTokenAmount * info.payoutRate))
@@ -66,13 +76,15 @@ export function MyBettingResultPanel({
       ) : (
         <button
           type="button"
-          onClick={() => mutate()}
+          onClick={handleClaim}
           disabled={isPending}
           className="rounded-xl bg-primary py-3.5 text-sm font-semibold text-white transition hover:brightness-95 disabled:opacity-40"
         >
           {isPending ? "수령 중…" : "토큰 수령하기"}
         </button>
       )}
+
+      {celebrate && <Confetti onComplete={() => setCelebrate(false)} />}
     </section>
   );
 }
