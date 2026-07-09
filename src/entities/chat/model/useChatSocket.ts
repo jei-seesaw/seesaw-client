@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-import { getToken } from "@/shared/lib";
+import { getToken, randomId } from "@/shared/lib";
 import { getChatMessages } from "../api/chatApi";
 import type { ChatMessage } from "./types";
 
@@ -83,7 +83,7 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
       if (!socket || text.length === 0 || text.length > MAX_CONTENT) return;
       socket.emit(
         "chat:message:send",
-        { voteEventId, clientMessageId: crypto.randomUUID(), content: text },
+        { voteEventId, clientMessageId: randomId(), content: text },
         // 성공 시 서버가 chat:message:new로도 브로드캐스트하므로 ack.data는 중복 방지에 맡긴다.
         // 실패(vote_event_not_found / validation_error)만 표면화.
         (ack: Ack<ChatMessage>) => {
