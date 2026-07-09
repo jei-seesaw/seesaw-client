@@ -269,7 +269,7 @@ function DetailsStep({
         <input
           value={title}
           onChange={(e) => onTitle(e.target.value)}
-          placeholder="예: 짜장면 vs 짬뽕, 오늘 점심은?"
+          placeholder="예: 신규 프로젝트 로고 시안, 여러분의 선택은?"
           className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-heading outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/30"
         />
       </label>
@@ -352,11 +352,7 @@ function OptionField({
       />
       {imageUrl ? (
         <div className="relative h-24 w-full overflow-hidden rounded-xl bg-gray-100">
-          <img
-            src={imageUrl}
-            alt={`${label} 이미지`}
-            className="h-full w-full object-contain"
-          />
+          <img src={imageUrl} alt={`${label} 이미지`} className="h-full w-full object-contain" />
           <button
             type="button"
             onClick={() => onPickImage(null)}
