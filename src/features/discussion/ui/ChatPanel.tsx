@@ -6,7 +6,7 @@ import { useChatSocket, type ChatMessage } from "@/entities/chat";
 const MAX_CONTENT = 500;
 
 export function ChatPanel({ voteEventId }: { voteEventId: string }) {
-  const { messages, connected, error, sendMessage } = useChatSocket(voteEventId, true);
+  const { messages, connected, error, sendMessage, totalCount } = useChatSocket(voteEventId, true);
   const myNickname = getNickname();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
@@ -43,7 +43,7 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
       <header className="flex items-center justify-between">
         <h2 className="flex items-center gap-1.5 text-sm font-bold text-heading">
           💬 토론
-          <span className="text-xs font-medium text-muted">{messages.length}</span>
+          <span className="text-xs font-medium text-muted">{totalCount}</span>
         </h2>
         <span className="flex items-center gap-1 text-xs text-emerald-500">
           <span className={`h-1.5 w-1.5 rounded-full ${connected ? "bg-emerald-500" : "bg-gray-300"}`} />

@@ -20,4 +20,6 @@ export interface ChatMessagesPage {
     hasNext: boolean;
     nextCursor: string | null;
   };
+  /** 채팅방 전체 메시지 수 (현재 로드된 개수와 무관). */
+  totalCount: number;
 }

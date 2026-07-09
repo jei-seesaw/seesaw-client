@@ -19,6 +19,7 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const socketRef = useRef<Socket | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
   const cursorRef = useRef<string | null>(null);
@@ -44,6 +45,7 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
       if (!active || isDuplicate(message)) return;
       remember(message);
       setMessages((prev) => [...prev, message]);
+      setTotalCount((c) => c + 1);
     };
 
     // 1) 히스토리 → 2) 소켓 연결 (히스토리 먼저 확보)
@@ -54,6 +56,7 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
         setMessages(res.messages);
         cursorRef.current = res.pageInfo.nextCursor;
         setHasMore(res.pageInfo.hasNext);
+        setTotalCount(res.totalCount);
       })
       .catch(() => {})
       .finally(() => {
@@ -127,5 +130,5 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
     [voteEventId],
   );
 
-  return { messages, connected, error, sendMessage, loadOlder, hasMore, loadingOlder };
+  return { messages, connected, error, sendMessage, loadOlder, hasMore, loadingOlder, totalCount };
 }
