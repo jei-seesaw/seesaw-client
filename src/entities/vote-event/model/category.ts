@@ -8,10 +8,10 @@ export interface CategoryDef {
 }
 
 export const VOTE_CATEGORIES: readonly CategoryDef[] = [
-  { code: "betting", label: "배팅", emoji: "🎯", description: "스포츠 결과 + 토큰 배팅" },
+  { code: "work", label: "업무", emoji: "💼", description: "업무 의견 수집" },
   { code: "daily", label: "일상", emoji: "☀️", description: "가벼운 일상 주제" },
   { code: "balance", label: "밸런스", emoji: "⚖️", description: "A vs B 취향 대결" },
-  { code: "work", label: "업무", emoji: "💼", description: "업무 의견 수집" },
+  { code: "betting", label: "배팅", emoji: "🎯", description: "결과 + 토큰 내기" },
 ];
 
 export type VoteCategoryCode = CategoryDef["code"];
@@ -19,9 +19,7 @@ export type VoteCategoryCode = CategoryDef["code"];
 /** 필터 칩·목록에서 쓰는 한글 라벨 배열. */
 export const CATEGORY_LABELS = VOTE_CATEGORIES.map((c) => c.label);
 
-const EMOJI_BY_LABEL: Record<string, string> = Object.fromEntries(
-  VOTE_CATEGORIES.map((c) => [c.label, c.emoji]),
-);
+const EMOJI_BY_LABEL: Record<string, string> = Object.fromEntries(VOTE_CATEGORIES.map((c) => [c.label, c.emoji]));
 
 const FALLBACK_EMOJI = "🗳️";
 
