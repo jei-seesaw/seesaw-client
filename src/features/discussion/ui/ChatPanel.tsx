@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { Send } from "lucide-react";
 import { getNickname } from "@/shared/lib";
 import { useChatSocket, type ChatMessage } from "@/entities/chat";
@@ -6,29 +6,57 @@ import { useChatSocket, type ChatMessage } from "@/entities/chat";
 const MAX_CONTENT = 500;
 
 export function ChatPanel({ voteEventId }: { voteEventId: string }) {
-  const { messages, connected, error, sendMessage, totalCount } = useChatSocket(voteEventId, true);
+  const { messages, connected, error, sendMessage, totalCount, loadOlder, hasMore, loadingOlder } = useChatSocket(
+    voteEventId,
+    true,
+  );
   const myNickname = getNickname();
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
+  const nearBottomRef = useRef(true);
+  const prevCountRef = useRef(0);
+  // 이전 메시지 로드 직전의 스크롤 높이/위치를 저장 (prepend 후 위치 복원용)
+  const pendingOlderRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
 
-  const scrollToBottom = useCallback((smooth = true) => {
-    requestAnimationFrame(() => {
-      const el = listRef.current;
-      if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
-    });
-  }, []);
+  /**
+   * 메시지 변경 후 스크롤 처리:
+   * - 이전 메시지를 앞에 붙였으면(prepend) 보던 위치를 그대로 유지
+   * - 그 외(신규 수신/전송/최초 로드)엔 하단 근처일 때만 맨 아래로
+   * */
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const wasCount = prevCountRef.current;
+    prevCountRef.current = messages.length;
 
-  // 새 메시지가 오거나(히스토리 포함) 전송하면 맨 아래로 스크롤
-  useEffect(() => {
-    scrollToBottom(false);
-  }, [messages, scrollToBottom]);
+    if (pendingOlderRef.current) {
+      const { prevHeight, prevTop } = pendingOlderRef.current;
+      pendingOlderRef.current = null;
+      el.scrollTop = el.scrollHeight - prevHeight + prevTop;
+      return;
+    }
+    if (wasCount === 0 || nearBottomRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: wasCount === 0 ? "auto" : "smooth" });
+    }
+  }, [messages]);
+
+  function handleScroll() {
+    const el = listRef.current;
+    if (!el) return;
+    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+    // 맨 위 근처에 닿으면 이전 메시지 로드
+    if (hasMore && !loadingOlder && !pendingOlderRef.current && el.scrollTop <= 60) {
+      pendingOlderRef.current = { prevHeight: el.scrollHeight, prevTop: el.scrollTop };
+      loadOlder();
+    }
+  }
 
   function handleSend() {
     const text = draft.trim();
     if (!text) return;
+    nearBottomRef.current = true;
     sendMessage(text);
     setDraft("");
-    scrollToBottom();
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
@@ -53,7 +81,8 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">{error}</p>}
 
-      <div ref={listRef} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
+      <div ref={listRef} onScroll={handleScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
+        {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
         {messages.length === 0 ? (
           <p className="py-10 text-center text-xs text-muted">아직 메시지가 없어요. 먼저 의견을 남겨보세요!</p>
         ) : (
@@ -90,7 +119,6 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => scrollToBottom()}
           maxLength={MAX_CONTENT}
           placeholder="메시지 보내기..."
           className="flex-1 rounded-full bg-gray-50 px-4 py-2.5 text-sm text-heading outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/30"
