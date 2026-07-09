@@ -47,9 +47,12 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
       .catch(() => {})
       .finally(() => {
         if (!active) return;
-        // same-origin으로 붙어 Vite 프록시(/socket.io, ws)를 타게 한다 → CORS 회피
+        // same-origin으로 붙어 프록시(/api/v2/socket.io)를 타게 한다 → CORS 회피.
+        // Vercel rewrite는 WebSocket 업그레이드를 프록시하지 못하므로 배포 환경에선
+        // polling(HTTP)만으로 통신하도록 고정한다. (Vite dev 프록시는 ws도 되지만 통일)
         socket = io("/api/v2/chats", {
           path: "/api/v2/socket.io",
+          transports: ["polling"],
           auth: { accessToken: getToken() },
         });
         socketRef.current = socket;
