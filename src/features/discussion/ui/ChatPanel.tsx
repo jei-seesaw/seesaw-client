@@ -12,14 +12,16 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
   const listRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = useCallback((smooth = true) => {
-    const el = listRef.current;
-    if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    requestAnimationFrame(() => {
+      const el = listRef.current;
+      if (el) el.scrollTo({ top: el.scrollHeight, behavior: smooth ? "smooth" : "auto" });
+    });
   }, []);
 
   // 새 메시지가 오거나(히스토리 포함) 전송하면 맨 아래로 스크롤
   useEffect(() => {
     scrollToBottom(false);
-  }, [messages.length, scrollToBottom]);
+  }, [messages, scrollToBottom]);
 
   function handleSend() {
     const text = draft.trim();
@@ -75,7 +77,7 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
           onKeyDown={handleKeyDown}
           onFocus={() => scrollToBottom()}
           maxLength={MAX_CONTENT}
-          placeholder="익명으로 메시지 보내기..."
+          placeholder="메시지 보내기..."
           className="flex-1 rounded-full bg-gray-50 px-4 py-2.5 text-sm text-heading outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/30"
         />
         <button
@@ -108,8 +110,8 @@ function MessageBubble({ message, mine }: { message: ChatMessage; mine: boolean 
   if (mine) {
     return (
       <div className="flex items-end justify-end gap-1.5">
-        <span className="text-[10px] text-muted">{time}</span>
-        <p className="max-w-[75%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-white">
+        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>
+        <p className="min-w-0 whitespace-pre-wrap wrap-anywhere rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-white">
           {message.content}
         </p>
       </div>
@@ -123,10 +125,10 @@ function MessageBubble({ message, mine }: { message: ChatMessage; mine: boolean 
         <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-muted">{message.user.affiliationName}</span>
       </div>
       <div className="flex items-end gap-1.5">
-        <p className="max-w-[75%] whitespace-pre-wrap wrap-break-word rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-heading">
+        <span className="min-w-0 whitespace-pre-wrap wrap-anywhere rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-heading">
           {message.content}
-        </p>
-        <span className="text-[10px] text-muted">{time}</span>
+        </span>
+        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>
       </div>
     </div>
   );
@@ -152,9 +154,5 @@ function formatDateLabel(iso: string): string {
 function isSameDay(a: string, b: string): boolean {
   const da = new Date(a);
   const db = new Date(b);
-  return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
-  );
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
 }
