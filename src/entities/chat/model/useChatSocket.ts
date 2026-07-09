@@ -17,13 +17,22 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [connected, setConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const seenRef = useRef<Set<string>>(new Set());
+  const cursorRef = useRef<string | null>(null);
+  const loadingOlderRef = useRef(false);
 
   useEffect(() => {
     if (!enabled || !voteEventId) return;
     let active = true;
     let socket: Socket | null = null;
+
+    // voteEventId가 바뀌면 이전 방의 dedup/커서 상태를 초기화
+    // (messages/hasMore는 아래 초기 fetch의 응답으로 교체된다)
+    seenRef.current.clear();
+    cursorRef.current = null;
 
     const seen = seenRef.current;
     const remember = (m: ChatMessage) => {
@@ -43,13 +52,12 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
         if (!active) return;
         res.messages.forEach(remember);
         setMessages(res.messages);
+        cursorRef.current = res.pageInfo.nextCursor;
+        setHasMore(res.pageInfo.hasNext);
       })
       .catch(() => {})
       .finally(() => {
         if (!active) return;
-        // same-origin으로 붙어 프록시(/api/v2/socket.io)를 타게 한다 → CORS 회피.
-        // Vercel rewrite는 WebSocket 업그레이드를 프록시하지 못하므로 배포 환경에선
-        // polling(HTTP)만으로 통신하도록 고정한다. (Vite dev 프록시는 ws도 되지만 통일)
         socket = io("/api/v2/chats", {
           path: "/api/v2/socket.io",
           transports: ["polling"],
@@ -79,6 +87,30 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
     };
   }, [voteEventId, enabled]);
 
+  // 위로 스크롤 시 이전(더 오래된) 메시지를 커서로 불러와 앞쪽에 붙인다.
+  const loadOlder = useCallback(async () => {
+    if (loadingOlderRef.current || !cursorRef.current) return;
+    loadingOlderRef.current = true;
+    setLoadingOlder(true);
+    try {
+      const res = await getChatMessages(voteEventId, { limit: 50, cursor: cursorRef.current });
+      const seen = seenRef.current;
+      const fresh = res.messages.filter((m) => !seen.has(m.id));
+      fresh.forEach((m) => {
+        seen.add(m.id);
+        if (m.clientMessageId) seen.add(m.clientMessageId);
+      });
+      cursorRef.current = res.pageInfo.nextCursor;
+      setHasMore(res.pageInfo.hasNext);
+      if (fresh.length) setMessages((prev) => [...fresh, ...prev]);
+    } catch {
+      //
+    } finally {
+      loadingOlderRef.current = false;
+      setLoadingOlder(false);
+    }
+  }, [voteEventId]);
+
   const sendMessage = useCallback(
     (content: string) => {
       const socket = socketRef.current;
@@ -87,8 +119,6 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
       socket.emit(
         "chat:message:send",
         { voteEventId, clientMessageId: randomId(), content: text },
-        // 성공 시 서버가 chat:message:new로도 브로드캐스트하므로 ack.data는 중복 방지에 맡긴다.
-        // 실패(vote_event_not_found / validation_error)만 표면화.
         (ack: Ack<ChatMessage>) => {
           if (ack && !ack.ok) setError(ack.error.message);
         },
@@ -97,5 +127,5 @@ export function useChatSocket(voteEventId: string, enabled: boolean) {
     [voteEventId],
   );
 
-  return { messages, connected, error, sendMessage };
+  return { messages, connected, error, sendMessage, loadOlder, hasMore, loadingOlder };
 }
