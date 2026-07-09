@@ -18,8 +18,8 @@ export function Header() {
     <header className="sticky top-0 z-30 border-b border-border bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
         <Link to="/" className="flex items-center gap-2">
-          <img src="/favicon.svg" alt="시소 로고" className="h-10 w-10" />
-          <span className="text-xl font-bold text-heading">시소</span>
+          <img src="/header-icon.svg" alt="시소 로고" className="h-10 w-auto" />
+          <span className="ml-2 text-xl font-bold text-heading">시소</span>
         </Link>
 
         {isLoggedIn ? (
