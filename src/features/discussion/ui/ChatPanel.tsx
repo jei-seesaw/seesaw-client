@@ -59,11 +59,26 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
         ) : (
           messages.map((m, i) => {
             const prev = messages[i - 1];
+            const next = messages[i + 1];
             const showDivider = !prev || !isSameDay(prev.createdAt, m.createdAt);
+            // 같은 사람의 연속 메시지 중 첫 번째에만 닉네임을, 같은 분 그룹의 마지막에만 시간을 표시
+            const firstOfSender = showDivider || !prev || prev.user.id !== m.user.id;
+            const nextDateChanged = !!next && !isSameDay(m.createdAt, next.createdAt);
+            const lastOfMinute =
+              !next ||
+              nextDateChanged ||
+              next.user.id !== m.user.id ||
+              formatTime(next.createdAt) !== formatTime(m.createdAt);
             return (
               <Fragment key={m.id}>
                 {showDivider && <DateDivider iso={m.createdAt} />}
-                <MessageBubble message={m} mine={m.user.nickname === myNickname} />
+                <MessageBubble
+                  message={m}
+                  mine={m.user.nickname === myNickname}
+                  showName={firstOfSender}
+                  showTime={lastOfMinute}
+                  grouped={!firstOfSender}
+                />
               </Fragment>
             );
           })
@@ -104,13 +119,27 @@ function DateDivider({ iso }: { iso: string }) {
   );
 }
 
-function MessageBubble({ message, mine }: { message: ChatMessage; mine: boolean }) {
+function MessageBubble({
+  message,
+  mine,
+  showName,
+  showTime,
+  grouped,
+}: {
+  message: ChatMessage;
+  mine: boolean;
+  showName: boolean;
+  showTime: boolean;
+  grouped: boolean;
+}) {
   const time = formatTime(message.createdAt);
+  // 연속 메시지는 간격을 좁혀 바로 아래에 붙인다. (컨테이너 gap-3에서 끌어올림)
+  const spacing = grouped ? "-mt-2.5" : "";
 
   if (mine) {
     return (
-      <div className="flex items-end justify-end gap-1.5">
-        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>
+      <div className={`flex items-end justify-end gap-1.5 ${spacing}`}>
+        {showTime && <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>}
         <p className="min-w-0 whitespace-pre-wrap wrap-anywhere rounded-2xl rounded-tr-sm bg-primary px-3 py-2 text-sm text-white">
           {message.content}
         </p>
@@ -119,16 +148,19 @@ function MessageBubble({ message, mine }: { message: ChatMessage; mine: boolean 
   }
 
   return (
-    <div className="flex flex-col items-start gap-1">
-      <div className="flex items-center gap-1.5">
-        <span className="text-xs font-semibold text-heading">{message.user.nickname}</span>
-        <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] text-muted">{message.user.affiliationName}</span>
-      </div>
+    <div className={`flex flex-col items-start gap-1 ${spacing}`}>
+      {showName && (
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs font-semibold text-heading">{message.user.nickname}</span>
+          <span className="h-2.5 w-px bg-muted" />
+          <span className="text-[10px] text-muted">{message.user.affiliationName}</span>
+        </div>
+      )}
       <div className="flex items-end gap-1.5">
         <span className="min-w-0 whitespace-pre-wrap wrap-anywhere rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-heading">
           {message.content}
         </span>
-        <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>
+        {showTime && <span className="shrink-0 whitespace-nowrap text-[10px] text-muted">{time}</span>}
       </div>
     </div>
   );
