@@ -48,6 +48,10 @@ export function CreateVoteModal({ open, onClose }: CreateVoteModalProps) {
   const deadlineOptions = useMemo(() => (open ? buildDeadlineOptions(new Date()) : []), [open]);
   const effectiveDeadline = deadlineAt || deadlineOptions[deadlineOptions.length - 1]?.value || "";
 
+  const titlePlaceholder =
+    VOTE_CATEGORIES.find((c) => c.code === category)?.titlePlaceholder ??
+    "예: 신규 프로젝트 로고 시안, 여러분의 선택은?";
+
   const pending = uploading || isPending;
 
   function pickImage(current: PickedImage | null, setImage: (v: PickedImage | null) => void, file: File | null) {
@@ -155,6 +159,7 @@ export function CreateVoteModal({ open, onClose }: CreateVoteModalProps) {
       ) : (
         <DetailsStep
           title={title}
+          titlePlaceholder={titlePlaceholder}
           optionA={optionA}
           optionB={optionB}
           imageAUrl={imageA?.url ?? null}
@@ -221,6 +226,7 @@ function CategoryStep({
 
 function DetailsStep({
   title,
+  titlePlaceholder,
   optionA,
   optionB,
   imageAUrl,
@@ -239,6 +245,7 @@ function DetailsStep({
   errorMessage,
 }: {
   title: string;
+  titlePlaceholder: string;
   optionA: string;
   optionB: string;
   imageAUrl: string | null;
@@ -269,11 +276,10 @@ function DetailsStep({
         <input
           value={title}
           onChange={(e) => onTitle(e.target.value)}
-          placeholder="예: 신규 프로젝트 로고 시안, 여러분의 선택은?"
-          className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-heading outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/30"
+          placeholder={titlePlaceholder}
+          className="rounded-xl bg-gray-50 px-4 py-3 text-sm text-heading outline-none focus:ring-2 focus:ring-primary/30"
         />
       </label>
-
       <div className="grid grid-cols-2 gap-3">
         <OptionField
           label="A 선택지"
@@ -292,17 +298,14 @@ function DetailsStep({
           onPickImage={onPickImageB}
         />
       </div>
-
       <div className="flex flex-col gap-1.5">
         <span className="text-sm font-semibold text-heading">마감 시간</span>
         <div className="rounded-xl bg-gray-50 px-4">
           <WheelPicker options={deadlineOptions} value={deadline} onChange={onDeadline} />
         </div>
-        <span className="text-xs text-muted">위아래로 넘겨 정각을 선택하세요. (생성 시점부터 24시간 이내)</span>
+        <span className="text-xs text-muted">위아래로 넘겨 마감 시간을 선택하세요. (최대 24시간)</span>
       </div>
-
       {errorMessage && <p className="text-xs text-red-500">{errorMessage}</p>}
-
       <button
         type="submit"
         disabled={!canSubmit}
