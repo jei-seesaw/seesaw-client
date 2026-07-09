@@ -18,19 +18,13 @@ export function Header() {
     <header className="sticky top-0 z-30 border-b border-border bg-surface">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
         <Link to="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-lg text-white">
-            ⚡
-          </span>
+          <img src="/favicon.svg" alt="시소 로고" className="h-10 w-10" />
           <span className="text-xl font-bold text-heading">시소</span>
         </Link>
 
         {isLoggedIn ? (
           <div className="flex items-center gap-3">
-            {nickname && (
-              <span className="text-sm font-semibold text-heading">
-                {nickname}님
-              </span>
-            )}
+            {nickname && <span className="text-sm font-semibold text-heading">{nickname}님</span>}
             {data?.voteToken != null && (
               <span className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm font-semibold text-emerald-600">
                 🪙 {data.voteToken.toLocaleString()}
