@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { ChatMessage } from "@/entities/chat";
 
 /** 하단에서 이 픽셀 이내면 "맨 아래 근처"로 보고 새 메시지에 자동 추적한다. */
@@ -21,6 +21,10 @@ interface ChatAutoScroll {
   onScroll: () => void;
   /** 메시지 전송 시 호출 — 다음 렌더에서 맨 아래(+페이지)로 스크롤한다. */
   markSend: () => void;
+  /** 위로 올려둔 상태에서 새 메시지가 도착했는지 (점프 버튼 노출용). */
+  hasNewMessages: boolean;
+  /** 리스트를 맨 아래로 스크롤 (점프 버튼 클릭용). */
+  scrollToBottom: () => void;
 }
 
 /**
@@ -28,6 +32,7 @@ interface ChatAutoScroll {
  * - 최초 로드 / 내가 전송 / 하단 근처에서 수신 → 맨 아래로
  * - 내가 전송한 경우엔 페이지까지 내려 입력창을 화면 맨 아래에 노출
  * - 위로 올려 과거 메시지를 불러오면(prepend) 보던 위치를 유지
+ * - 위로 올려둔 상태에서 새 메시지가 오면 자동 스크롤 대신 hasNewMessages로 알림
  */
 export function useChatAutoScroll(
   messages: ChatMessage[],
@@ -43,6 +48,8 @@ export function useChatAutoScroll(
   const sendPending = useRef(false);
   // prepend 직전 스크롤 상태 — 이후 위치 복원용.
   const olderAnchor = useRef<{ height: number; top: number } | null>(null);
+  // 위로 올려둔 상태에서 도착한 새 메시지 알림.
+  const [hasNewMessages, setHasNewMessages] = useState(false);
 
   useLayoutEffect(() => {
     const el = listRef.current;
@@ -62,12 +69,17 @@ export function useChatAutoScroll(
     const isSend = sendPending.current;
     sendPending.current = false;
 
-    // 최초 로드·내 전송·하단 근처 수신이 아니면 스크롤하지 않는다.
-    if (wasCount !== 0 && !isSend && !nearBottom.current) return;
+    // 하단에서 벗어나 있는데 새 메시지가 도착 → 자동 스크롤 대신 버튼으로 알림.
+    if (wasCount !== 0 && !isSend && !nearBottom.current) {
+      if (messages.length > wasCount) setHasNewMessages(true);
+      return;
+    }
 
+    // 최초 로드 / 내 전송 / 하단 근처 수신 → 맨 아래로.
     const behavior: ScrollBehavior = wasCount === 0 ? "auto" : "smooth";
     el.scrollTo({ top: el.scrollHeight, behavior });
     if (isSend) bottomRef.current?.scrollIntoView({ behavior, block: "end" });
+    setHasNewMessages(false);
   }, [messages]);
 
   function onScroll() {
@@ -75,6 +87,8 @@ export function useChatAutoScroll(
     if (!el) return;
     nearBottom.current =
       el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX;
+    // 하단으로 돌아오면 알림 해제.
+    if (nearBottom.current) setHasNewMessages(false);
     // 맨 위 근처에 닿으면 이전 메시지 로드 (중복 요청 방지).
     if (hasMore && !loadingOlder && !olderAnchor.current && el.scrollTop <= LOAD_OLDER_PX) {
       olderAnchor.current = { height: el.scrollHeight, top: el.scrollTop };
@@ -87,5 +101,13 @@ export function useChatAutoScroll(
     sendPending.current = true;
   }
 
-  return { listRef, bottomRef, onScroll, markSend };
+  function scrollToBottom() {
+    const el = listRef.current;
+    if (!el) return;
+    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    nearBottom.current = true;
+    setHasNewMessages(false);
+  }
+
+  return { listRef, bottomRef, onScroll, markSend, hasNewMessages, scrollToBottom };
 }

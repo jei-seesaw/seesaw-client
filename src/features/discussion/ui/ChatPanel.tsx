@@ -1,5 +1,5 @@
 import { Fragment, useState, type KeyboardEvent } from "react";
-import { Send } from "lucide-react";
+import { ArrowDown, Send } from "lucide-react";
 import { getNickname } from "@/shared/lib";
 import { useChatSocket, type ChatMessage } from "@/entities/chat";
 import { useChatAutoScroll } from "../model/useChatAutoScroll";
@@ -13,7 +13,7 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
   );
   const myNickname = getNickname();
   const [draft, setDraft] = useState("");
-  const { listRef, bottomRef, onScroll, markSend } = useChatAutoScroll(messages, {
+  const { listRef, bottomRef, onScroll, markSend, hasNewMessages, scrollToBottom } = useChatAutoScroll(messages, {
     hasMore,
     loadingOlder,
     loadOlder,
@@ -49,9 +49,20 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">{error}</p>}
 
-      <div ref={listRef} onScroll={onScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
-        {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
-        <MessageList messages={messages} myNickname={myNickname} />
+      <div className="relative">
+        <div ref={listRef} onScroll={onScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
+          {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
+          <MessageList messages={messages} myNickname={myNickname} />
+        </div>
+        {hasNewMessages && (
+          <button
+            type="button"
+            onClick={scrollToBottom}
+            className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-white shadow-md transition hover:brightness-95"
+          >
+            <ArrowDown size={14} /> 새 메시지
+          </button>
+        )}
       </div>
 
       <div className="flex gap-2">
