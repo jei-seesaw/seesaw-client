@@ -21,8 +21,8 @@ interface ChatAutoScroll {
   markSend: () => void;
   /** 위로 올려둔 상태에서 새 메시지가 도착했는지 (점프 버튼 노출용). */
   hasNewMessages: boolean;
-  /** 리스트+페이지를 화면 맨 아래로 스크롤 (전송·포커스·입력·점프 버튼 공용 경로). */
-  scrollToBottom: (behavior?: ScrollBehavior) => void;
+  /** 화면 맨 아래로 스크롤 */
+  scrollToBottom: (behavior?: ScrollBehavior, page?: boolean) => void;
 }
 
 /**
@@ -48,11 +48,11 @@ export function useChatAutoScroll(
   // 위로 올려둔 상태에서 도착한 새 메시지 알림.
   const [hasNewMessages, setHasNewMessages] = useState(false);
 
-  // 리스트와 페이지를 함께 화면 맨 아래로 내리는 단일 경로.
-  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+  // 맨 아래로 내리는 단일 경로.
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth", page = true) => {
     const el = listRef.current;
     if (el) el.scrollTo({ top: el.scrollHeight, behavior });
-    window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
+    if (page) window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
     nearBottom.current = true;
     setHasNewMessages(false);
   }, []);
@@ -81,8 +81,7 @@ export function useChatAutoScroll(
       return;
     }
 
-    // 최초 로드 / 내 전송 / 하단 근처 수신 → 맨 아래로. (최초엔 애니메이션 없이)
-    scrollToBottom(wasCount === 0 ? "auto" : "smooth");
+    scrollToBottom(wasCount === 0 ? "auto" : "smooth", isSend);
   }, [messages, scrollToBottom]);
 
   function onScroll() {
