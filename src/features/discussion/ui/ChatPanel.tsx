@@ -1,7 +1,8 @@
-import { Fragment, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useState, type KeyboardEvent } from "react";
 import { Send } from "lucide-react";
 import { getNickname } from "@/shared/lib";
 import { useChatSocket, type ChatMessage } from "@/entities/chat";
+import { useChatAutoScroll } from "../model/useChatAutoScroll";
 
 const MAX_CONTENT = 500;
 
@@ -12,49 +13,16 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
   );
   const myNickname = getNickname();
   const [draft, setDraft] = useState("");
-  const listRef = useRef<HTMLDivElement>(null);
-  const nearBottomRef = useRef(true);
-  const prevCountRef = useRef(0);
-  // 이전 메시지 로드 직전의 스크롤 높이/위치를 저장 (prepend 후 위치 복원용)
-  const pendingOlderRef = useRef<{ prevHeight: number; prevTop: number } | null>(null);
-
-  /**
-   * 메시지 변경 후 스크롤 처리:
-   * - 이전 메시지를 앞에 붙였으면(prepend) 보던 위치를 그대로 유지
-   * - 그 외(신규 수신/전송/최초 로드)엔 하단 근처일 때만 맨 아래로
-   * */
-  useLayoutEffect(() => {
-    const el = listRef.current;
-    if (!el) return;
-    const wasCount = prevCountRef.current;
-    prevCountRef.current = messages.length;
-
-    if (pendingOlderRef.current) {
-      const { prevHeight, prevTop } = pendingOlderRef.current;
-      pendingOlderRef.current = null;
-      el.scrollTop = el.scrollHeight - prevHeight + prevTop;
-      return;
-    }
-    if (wasCount === 0 || nearBottomRef.current) {
-      el.scrollTo({ top: el.scrollHeight, behavior: wasCount === 0 ? "auto" : "smooth" });
-    }
-  }, [messages]);
-
-  function handleScroll() {
-    const el = listRef.current;
-    if (!el) return;
-    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
-    // 맨 위 근처에 닿으면 이전 메시지 로드
-    if (hasMore && !loadingOlder && !pendingOlderRef.current && el.scrollTop <= 60) {
-      pendingOlderRef.current = { prevHeight: el.scrollHeight, prevTop: el.scrollTop };
-      loadOlder();
-    }
-  }
+  const { listRef, bottomRef, onScroll, markSend } = useChatAutoScroll(messages, {
+    hasMore,
+    loadingOlder,
+    loadOlder,
+  });
 
   function handleSend() {
     const text = draft.trim();
     if (!text) return;
-    nearBottomRef.current = true;
+    markSend();
     sendMessage(text);
     setDraft("");
   }
@@ -81,37 +49,9 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">{error}</p>}
 
-      <div ref={listRef} onScroll={handleScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
+      <div ref={listRef} onScroll={onScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
         {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
-        {messages.length === 0 ? (
-          <p className="py-10 text-center text-xs text-muted">아직 메시지가 없어요. 먼저 의견을 남겨보세요!</p>
-        ) : (
-          messages.map((m, i) => {
-            const prev = messages[i - 1];
-            const next = messages[i + 1];
-            const showDivider = !prev || !isSameDay(prev.createdAt, m.createdAt);
-            // 같은 사람의 연속 메시지 중 첫 번째에만 닉네임을, 같은 분 그룹의 마지막에만 시간을 표시
-            const firstOfSender = showDivider || !prev || prev.user.id !== m.user.id;
-            const nextDateChanged = !!next && !isSameDay(m.createdAt, next.createdAt);
-            const lastOfMinute =
-              !next ||
-              nextDateChanged ||
-              next.user.id !== m.user.id ||
-              formatTime(next.createdAt) !== formatTime(m.createdAt);
-            return (
-              <Fragment key={m.id}>
-                {showDivider && <DateDivider iso={m.createdAt} />}
-                <MessageBubble
-                  message={m}
-                  mine={m.user.nickname === myNickname}
-                  showName={firstOfSender}
-                  showTime={lastOfMinute}
-                  grouped={!firstOfSender}
-                />
-              </Fragment>
-            );
-          })
-        )}
+        <MessageList messages={messages} myNickname={myNickname} />
       </div>
 
       <div className="flex gap-2">
@@ -133,8 +73,43 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
           <Send size={16} />
         </button>
       </div>
+      {/* 맨 아래 스크롤 기준점 */}
+      <div ref={bottomRef} />
     </section>
   );
+}
+
+/** 메시지 목록 렌더링 + 연속 메시지 그룹핑(닉네임/시간/날짜 구분선) 처리. */
+function MessageList({ messages, myNickname }: { messages: ChatMessage[]; myNickname: string | null }) {
+  if (messages.length === 0) {
+    return <p className="py-10 text-center text-xs text-muted">아직 메시지가 없어요. 먼저 의견을 남겨보세요!</p>;
+  }
+
+  return messages.map((m, i) => {
+    const prev = messages[i - 1];
+    const next = messages[i + 1];
+    const showDivider = !prev || !isSameDay(prev.createdAt, m.createdAt);
+    // 같은 사람의 연속 메시지 중 첫 번째에만 닉네임을, 같은 분 그룹의 마지막에만 시간을 표시
+    const firstOfSender = showDivider || !prev || prev.user.id !== m.user.id;
+    const nextDateChanged = !!next && !isSameDay(m.createdAt, next.createdAt);
+    const lastOfMinute =
+      !next ||
+      nextDateChanged ||
+      next.user.id !== m.user.id ||
+      formatTime(next.createdAt) !== formatTime(m.createdAt);
+    return (
+      <Fragment key={m.id}>
+        {showDivider && <DateDivider iso={m.createdAt} />}
+        <MessageBubble
+          message={m}
+          mine={m.user.nickname === myNickname}
+          showName={firstOfSender}
+          showTime={lastOfMinute}
+          grouped={!firstOfSender}
+        />
+      </Fragment>
+    );
+  });
 }
 
 function DateDivider({ iso }: { iso: string }) {
