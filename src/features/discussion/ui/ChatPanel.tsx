@@ -50,9 +50,12 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-500">{error}</p>}
 
       <div className="relative">
-        <div ref={listRef} onScroll={onScroll} className="no-scrollbar flex max-h-80 flex-col gap-3 overflow-y-auto">
-          {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
-          <MessageList messages={messages} myNickname={myNickname} />
+        <div ref={listRef} onScroll={onScroll} className="no-scrollbar flex h-80 flex-col overflow-y-auto">
+          {/* mt-auto: 메시지가 적으면 하단 정렬, 넘치면 auto가 0이 되어 정상 스크롤 */}
+          <div className="mt-auto flex flex-col gap-3">
+            {loadingOlder && <p className="py-2 text-center text-xs text-muted">이전 메시지 불러오는 중…</p>}
+            <MessageList messages={messages} myNickname={myNickname} />
+          </div>
         </div>
         {hasNewMessages && (
           <button
