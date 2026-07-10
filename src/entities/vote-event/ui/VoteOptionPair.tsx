@@ -1,3 +1,4 @@
+import { VsDivider } from "@/shared/ui";
 import type { VoteEventListItem } from "../model/types";
 
 interface VoteOptionPairProps {
@@ -10,7 +11,7 @@ export function VoteOptionPair({ item, size = "sm" }: VoteOptionPairProps) {
   return (
     <div className="flex items-stretch gap-2">
       <OptionBox side="A" label={item.optionA} ratio={item.optionARatio} size={size} />
-      <span className="self-center text-xs font-semibold text-muted">vs</span>
+      <VsDivider />
       <OptionBox side="B" label={item.optionB} ratio={item.optionBRatio} size={size} />
     </div>
   );

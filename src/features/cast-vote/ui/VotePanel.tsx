@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BottomSheet } from "@/shared/ui";
+import { BottomSheet, VsDivider } from "@/shared/ui";
 import { useHomeSummaryQuery } from "@/entities/home";
 import {
   OptionPreview,
@@ -52,7 +52,7 @@ export function VotePanel({ voteEventId, detail, isBetting }: VotePanelProps) {
           selected={selected === "A"}
           onClick={() => setSelected("A")}
         />
-        <span className="self-center text-xs font-semibold text-muted">vs</span>
+        <VsDivider />
         <OptionPreview
           side="B"
           label={detail.optionB}
