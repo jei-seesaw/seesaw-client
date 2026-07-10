@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useHomeSummaryQuery } from "@/entities/home";
 import {
@@ -34,6 +34,9 @@ const SORT_OPTIONS: { key: MyVoteSort; label: string }[] = [
   { key: "participants", label: "참여자순" },
 ];
 
+/** 목록 한 페이지당 불러올 투표 수. */
+const PAGE_SIZE = 4;
+
 export function VoteEventBoard() {
   const [tab, setTab] = useState<Tab>("ongoing");
   const [category, setCategory] = useState<string>(ALL_CATEGORY);
@@ -46,14 +49,11 @@ export function VoteEventBoard() {
   // 로그아웃 등으로 현재 탭이 사라지면 첫 탭으로 폴백
   const activeTab = tabs.some((t) => t.key === tab) ? tab : "ongoing";
 
-  const categoryCode =
-    category === ALL_CATEGORY
-      ? undefined
-      : VOTE_CATEGORIES.find((c) => c.label === category)?.code;
+  const categoryCode = category === ALL_CATEGORY ? undefined : VOTE_CATEGORIES.find((c) => c.label === category)?.code;
 
   // 모든 목록 엔드포인트가 sort·category를 지원하므로 서버 파라미터로 전달.
   // 네 탭 모두 미리 조회(프리페치)해 두어 탭 전환 시 캐시에서 즉시 표시된다.
-  const params = { sort, category: categoryCode };
+  const params = { sort, category: categoryCode, limit: PAGE_SIZE };
   const ongoing = useOngoingVoteEventsQuery(params);
   const completed = useCompletedVoteEventsQuery(params);
   const created = useMyCreatedVoteEventsQuery(params);
@@ -68,15 +68,34 @@ export function VoteEventBoard() {
           ? created
           : participated;
 
-  // 탭에 맞는 목록을 단일 배열로 평탄화
+  // 탭에 맞는 목록을 단일 배열로 평탄화 (무한 스크롤의 모든 페이지 병합)
   const items = useMemo<VoteEventListItem[]>(() => {
     // 핫한 투표(mainVote)는 위 히어로에서 보여주므로 목록엔 나머지만 노출
-    if (activeTab === "ongoing") return ongoing.data?.otherVoteEvents ?? [];
-    if (activeTab === "completed") return completed.data?.voteEvents ?? [];
-    if (activeTab === "created") return created.data?.voteEvents ?? [];
-    return participated.data?.voteEvents ?? [];
+    if (activeTab === "ongoing") return ongoing.data?.pages.flatMap((p) => p.otherVoteEvents) ?? [];
+    if (activeTab === "completed") return completed.data?.pages.flatMap((p) => p.voteEvents) ?? [];
+    if (activeTab === "created") return created.data?.pages.flatMap((p) => p.voteEvents) ?? [];
+    return participated.data?.pages.flatMap((p) => p.voteEvents) ?? [];
   }, [activeTab, ongoing.data, completed.data, created.data, participated.data]);
 
+  // 목록 하단 센티넬이 보이면 다음 페이지를 자동으로 불러온다.
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const { hasNextPage, isFetchingNextPage, fetchNextPage } = query;
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasNextPage) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "80px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <section className="flex flex-col gap-5">
@@ -103,14 +122,10 @@ export function VoteEventBoard() {
               key={label}
               onClick={() => setCategory(label)}
               className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-                category === label
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-surface text-muted hover:bg-gray-100"
+                category === label ? "bg-amber-100 text-amber-700" : "bg-surface text-muted hover:bg-gray-100"
               }`}
             >
-              {label !== ALL_CATEGORY && (
-                <span className="mr-1">{getCategoryEmoji(label)}</span>
-              )}
+              {label !== ALL_CATEGORY && <span className="mr-1">{getCategoryEmoji(label)}</span>}
               {label}
             </button>
           ))}
@@ -128,10 +143,7 @@ export function VoteEventBoard() {
               </option>
             ))}
           </select>
-          <ChevronDown
-            size={14}
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted"
-          />
+          <ChevronDown size={14} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted" />
         </div>
       </div>
 
@@ -139,20 +151,23 @@ export function VoteEventBoard() {
       {query.isLoading ? (
         <p className="py-10 text-center text-sm text-muted">불러오는 중…</p>
       ) : items.length === 0 ? (
-        <p className="py-10 text-center text-sm text-muted">
-          표시할 투표가 없어요.
-        </p>
+        <p className="py-10 text-center text-sm text-muted">표시할 투표가 없어요.</p>
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {items.map((item) => (
-            <VoteEventCard
-              key={item.id}
-              item={item}
-              revealResults={activeTab === "completed"}
-              anchorMs={query.dataUpdatedAt}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {items.map((item) => (
+              <VoteEventCard
+                key={item.id}
+                item={item}
+                revealResults={activeTab === "completed"}
+                anchorMs={query.dataUpdatedAt}
+              />
+            ))}
+          </div>
+          {/* 무한 스크롤 감지용 센티넬 */}
+          <div ref={sentinelRef} className="h-px" />
+          {isFetchingNextPage && <p className="py-4 text-center text-sm text-muted">불러오는 중…</p>}
+        </>
       )}
     </section>
   );
