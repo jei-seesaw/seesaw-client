@@ -9,19 +9,9 @@ interface VoteOptionPairProps {
 export function VoteOptionPair({ item, size = "sm" }: VoteOptionPairProps) {
   return (
     <div className="flex items-stretch gap-2">
-      <OptionBox
-        side="A"
-        label={item.optionA}
-        ratio={item.optionARatio}
-        size={size}
-      />
+      <OptionBox side="A" label={item.optionA} ratio={item.optionARatio} size={size} />
       <span className="self-center text-xs font-semibold text-muted">vs</span>
-      <OptionBox
-        side="B"
-        label={item.optionB}
-        ratio={item.optionBRatio}
-        size={size}
-      />
+      <OptionBox side="B" label={item.optionB} ratio={item.optionBRatio} size={size} />
     </div>
   );
 }
@@ -37,19 +27,14 @@ function OptionBox({
   ratio: number | null;
   size: "sm" | "lg";
 }) {
-  const tone =
-    side === "A" ? "bg-indigo-50 text-indigo-500" : "bg-rose-50 text-rose-400";
-  const pad = size === "lg" ? "py-7" : "py-5";
+  const tone = side === "A" ? "bg-indigo-50 text-indigo-500" : "bg-rose-50 text-rose-400";
+  const pad = size === "lg" ? "px-4 py-7" : "px-3 py-5";
   const valueSize = size === "lg" ? "text-xl" : "text-lg";
 
   return (
-    <div
-      className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl ${pad} ${tone}`}
-    >
-      <span className={`font-bold ${valueSize}`}>
-        {ratio != null ? `${ratio}%` : "?"}
-      </span>
-      <span className="text-sm font-medium">{label}</span>
+    <div className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl ${pad} ${tone}`}>
+      <span className={`font-bold ${valueSize}`}>{ratio != null ? `${ratio}%` : "?"}</span>
+      <span className="text-center text-sm font-medium">{label}</span>
     </div>
   );
 }
