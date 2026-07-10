@@ -1,4 +1,5 @@
 export { AuthModal } from "./ui/AuthModal";
+export { useLoginGate } from "./model/useLoginGate";
 export {
   useLogin,
   useRegister,

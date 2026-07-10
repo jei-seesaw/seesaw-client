@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { useHomeSummaryQuery } from "@/entities/home";
+import { useLoginGate } from "@/features/auth";
 import {
   CATEGORY_LABELS,
   getCategoryEmoji,
@@ -44,6 +45,8 @@ export function VoteEventBoard() {
 
   const { data: home } = useHomeSummaryQuery();
   const isLoggedIn = home?.isLoggedIn ?? false;
+  // 비로그인 상태에서 카드 클릭 시 상세로 이동하지 않고 로그인 모달을 띄운다.
+  const { guard, authModal } = useLoginGate();
 
   const tabs = isLoggedIn ? [...BASE_TABS, ...MY_TABS] : BASE_TABS;
   // 로그아웃 등으로 현재 탭이 사라지면 첫 탭으로 폴백
@@ -161,6 +164,7 @@ export function VoteEventBoard() {
                 item={item}
                 revealResults={activeTab === "completed"}
                 anchorMs={query.dataUpdatedAt}
+                onClick={guard}
               />
             ))}
           </div>
@@ -169,6 +173,7 @@ export function VoteEventBoard() {
           {isFetchingNextPage && <p className="py-4 text-center text-sm text-muted">불러오는 중…</p>}
         </>
       )}
+      {authModal}
     </section>
   );
 }

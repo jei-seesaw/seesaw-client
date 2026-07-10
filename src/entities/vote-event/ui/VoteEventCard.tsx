@@ -11,6 +11,8 @@ interface VoteEventCardProps {
   revealResults?: boolean;
   /** 목록을 받은 시각(ms) — 타이머 앵커용. */
   anchorMs?: number;
+  /** 카드 클릭 핸들러. preventDefault로 이동을 막을 수 있다. */
+  onClick?: React.MouseEventHandler<HTMLAnchorElement>;
 }
 
 /**
@@ -22,12 +24,14 @@ export const VoteEventCard = memo(function VoteEventCard({
   item,
   revealResults = false,
   anchorMs,
+  onClick,
 }: VoteEventCardProps) {
   const remaining = useLiveRemaining(item.remainingTime, anchorMs);
 
   return (
     <Link
       to={`/votes/${item.id}`}
+      onClick={onClick}
       className="flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm transition hover:shadow-md"
     >
       <header className="flex items-center justify-between">
