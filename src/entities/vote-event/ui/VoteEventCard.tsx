@@ -32,22 +32,18 @@ export const VoteEventCard = memo(function VoteEventCard({
     >
       <header className="flex items-center justify-between">
         <CategoryBadge categoryName={item.categoryName} />
-        <span
-          className={`text-xs ${remaining.urgent ? "font-semibold text-red-500" : "text-muted"}`}
-        >
+        <span className={`text-xs ${remaining.urgent ? "font-semibold text-red-500" : "text-muted"}`}>
           🕒 {remaining.label}
         </span>
       </header>
 
-      <h3 className="text-base font-bold text-heading">{item.title}</h3>
+      <h3 className="line-clamp-2 min-h-12 text-base font-bold text-heading">{item.title}</h3>
 
       <div className="flex flex-col gap-2">
         <VoteOptionPair item={item} />
-        {!revealResults && !item.isParticipated && (
-          <p className="text-center text-xs text-muted">
-            🔒 투표 참여 후 결과 공개
-          </p>
-        )}
+        <p className={`text-center text-xs text-muted ${!revealResults && !item.isParticipated ? "" : "invisible"}`}>
+          🔒 투표 참여 후 결과 공개
+        </p>
       </div>
 
       <footer className="flex items-center gap-4 border-t border-border pt-3 text-xs text-muted">
