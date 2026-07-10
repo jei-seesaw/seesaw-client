@@ -35,7 +35,7 @@ const SORT_OPTIONS: { key: MyVoteSort; label: string }[] = [
 ];
 
 /** 목록 한 페이지당 불러올 투표 수. */
-const PAGE_SIZE = 4;
+const PAGE_SIZE = 20;
 
 export function VoteEventBoard() {
   const [tab, setTab] = useState<Tab>("ongoing");
