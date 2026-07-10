@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type { ChatMessage } from "@/entities/chat";
 
 /** 하단에서 이 픽셀 이내면 "맨 아래 근처"로 보고 새 메시지에 자동 추적한다. */
@@ -15,22 +15,20 @@ interface Options {
 interface ChatAutoScroll {
   /** 메시지 스크롤 컨테이너에 연결. */
   listRef: React.RefObject<HTMLDivElement | null>;
-  /** 입력창 아래 스크롤 기준점에 연결. */
-  bottomRef: React.RefObject<HTMLDivElement | null>;
   /** 컨테이너 onScroll 핸들러. */
   onScroll: () => void;
-  /** 메시지 전송 시 호출 — 다음 렌더에서 맨 아래(+페이지)로 스크롤한다. */
+  /** 메시지 전송 시 호출 — 다음 렌더에서 화면 맨 아래로 스크롤한다. */
   markSend: () => void;
   /** 위로 올려둔 상태에서 새 메시지가 도착했는지 (점프 버튼 노출용). */
   hasNewMessages: boolean;
-  /** 리스트를 맨 아래로 스크롤 (점프 버튼 클릭용). */
-  scrollToBottom: () => void;
+  /** 리스트+페이지를 화면 맨 아래로 스크롤 (전송·포커스·입력·점프 버튼 공용 경로). */
+  scrollToBottom: (behavior?: ScrollBehavior) => void;
 }
 
 /**
  * 토론 메시지 목록의 스크롤 동작을 한곳에서 관리한다.
+ * - 모든 "맨 아래로" 이동은 scrollToBottom 하나로 통일 (리스트 + 페이지 동시).
  * - 최초 로드 / 내가 전송 / 하단 근처에서 수신 → 맨 아래로
- * - 내가 전송한 경우엔 페이지까지 내려 입력창을 화면 맨 아래에 노출
  * - 위로 올려 과거 메시지를 불러오면(prepend) 보던 위치를 유지
  * - 위로 올려둔 상태에서 새 메시지가 오면 자동 스크롤 대신 hasNewMessages로 알림
  */
@@ -39,17 +37,25 @@ export function useChatAutoScroll(
   { hasMore, loadingOlder, loadOlder }: Options,
 ): ChatAutoScroll {
   const listRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   // 사용자가 하단 근처를 보고 있는지 (새 메시지 자동 추적 여부).
   const nearBottom = useRef(true);
   // 직전 메시지 개수 — 0이면 최초 로드.
   const prevCount = useRef(0);
-  // 내가 방금 전송했는지 (다음 렌더에서 페이지까지 스크롤).
+  // 내가 방금 전송했는지 (다음 렌더에서 자동 스크롤).
   const sendPending = useRef(false);
   // prepend 직전 스크롤 상태 — 이후 위치 복원용.
   const olderAnchor = useRef<{ height: number; top: number } | null>(null);
   // 위로 올려둔 상태에서 도착한 새 메시지 알림.
   const [hasNewMessages, setHasNewMessages] = useState(false);
+
+  // 리스트와 페이지를 함께 화면 맨 아래로 내리는 단일 경로.
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "smooth") => {
+    const el = listRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior });
+    window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
+    nearBottom.current = true;
+    setHasNewMessages(false);
+  }, []);
 
   useLayoutEffect(() => {
     const el = listRef.current;
@@ -75,18 +81,14 @@ export function useChatAutoScroll(
       return;
     }
 
-    // 최초 로드 / 내 전송 / 하단 근처 수신 → 맨 아래로.
-    const behavior: ScrollBehavior = wasCount === 0 ? "auto" : "smooth";
-    el.scrollTo({ top: el.scrollHeight, behavior });
-    if (isSend) bottomRef.current?.scrollIntoView({ behavior, block: "end" });
-    setHasNewMessages(false);
-  }, [messages]);
+    // 최초 로드 / 내 전송 / 하단 근처 수신 → 맨 아래로. (최초엔 애니메이션 없이)
+    scrollToBottom(wasCount === 0 ? "auto" : "smooth");
+  }, [messages, scrollToBottom]);
 
   function onScroll() {
     const el = listRef.current;
     if (!el) return;
-    nearBottom.current =
-      el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX;
+    nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < NEAR_BOTTOM_PX;
     // 하단으로 돌아오면 알림 해제.
     if (nearBottom.current) setHasNewMessages(false);
     // 맨 위 근처에 닿으면 이전 메시지 로드 (중복 요청 방지).
@@ -101,13 +103,5 @@ export function useChatAutoScroll(
     sendPending.current = true;
   }
 
-  function scrollToBottom() {
-    const el = listRef.current;
-    if (!el) return;
-    el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-    nearBottom.current = true;
-    setHasNewMessages(false);
-  }
-
-  return { listRef, bottomRef, onScroll, markSend, hasNewMessages, scrollToBottom };
+  return { listRef, onScroll, markSend, hasNewMessages, scrollToBottom };
 }

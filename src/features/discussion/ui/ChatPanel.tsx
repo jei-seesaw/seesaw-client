@@ -13,7 +13,7 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
   );
   const myNickname = getNickname();
   const [draft, setDraft] = useState("");
-  const { listRef, bottomRef, onScroll, markSend, hasNewMessages, scrollToBottom } = useChatAutoScroll(messages, {
+  const { listRef, onScroll, markSend, hasNewMessages, scrollToBottom } = useChatAutoScroll(messages, {
     hasMore,
     loadingOlder,
     loadOlder,
@@ -33,6 +33,11 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
       handleSend();
     }
   }
+
+  // 입력창 상호작용(포커스·입력) 시 화면 최하단으로 정렬.
+  // 브라우저 기본 포커스 스크롤(입력창만 보이게)이 끝난 다음 프레임에 실행해
+  // 우리 스크롤이 덮어써지지 않고 페이지 최하단까지 내려가게 한다.
+  const alignToBottom = () => requestAnimationFrame(() => scrollToBottom());
 
   return (
     <section className="flex flex-col gap-3 rounded-2xl bg-surface p-5">
@@ -60,7 +65,7 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
         {hasNewMessages && (
           <button
             type="button"
-            onClick={scrollToBottom}
+            onClick={() => scrollToBottom()}
             className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-white shadow-md transition hover:brightness-95"
           >
             <ArrowDown size={14} /> 새 메시지
@@ -71,8 +76,12 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
       <div className="flex gap-2">
         <input
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            alignToBottom();
+          }}
           onKeyDown={handleKeyDown}
+          onFocus={alignToBottom}
           maxLength={MAX_CONTENT}
           placeholder="메시지 보내기..."
           className="flex-1 rounded-full bg-gray-50 px-4 py-2.5 text-sm text-heading outline-none placeholder:text-muted focus:ring-2 focus:ring-primary/30"
@@ -87,8 +96,6 @@ export function ChatPanel({ voteEventId }: { voteEventId: string }) {
           <Send size={16} />
         </button>
       </div>
-      {/* 맨 아래 스크롤 기준점 */}
-      <div ref={bottomRef} />
     </section>
   );
 }
@@ -107,10 +114,7 @@ function MessageList({ messages, myNickname }: { messages: ChatMessage[]; myNick
     const firstOfSender = showDivider || !prev || prev.user.id !== m.user.id;
     const nextDateChanged = !!next && !isSameDay(m.createdAt, next.createdAt);
     const lastOfMinute =
-      !next ||
-      nextDateChanged ||
-      next.user.id !== m.user.id ||
-      formatTime(next.createdAt) !== formatTime(m.createdAt);
+      !next || nextDateChanged || next.user.id !== m.user.id || formatTime(next.createdAt) !== formatTime(m.createdAt);
     return (
       <Fragment key={m.id}>
         {showDivider && <DateDivider iso={m.createdAt} />}
